@@ -681,3 +681,31 @@ public OnVehicleDestroy(vehicleid)
     return 1; // Return for vehicles not tracked in the streamer
 }
 */
+/*
+public OnVehicleDeath(vehicleid, killerid)
+{
+    // Debug message for vehicle destruction
+    if (VSD == true)
+    {
+        printf("[DEBUG] OnVehicleDeath: VehicleID: %d, KillerID: %d", vehicleid, killerid);
+    }
+
+    // Inform all players about the vehicle destruction
+    new message[128];
+    format(message, sizeof(message), "Vehicle %d was destroyed. Reported by player %d.", vehicleid, killerid);
+    SendClientMessageToAll(0xFFFFFFFF, message);
+
+    // Handle the vehicle's destruction in the streamer
+    for (new vv = 0; vv < MAX_STREAM_VEHICLES; vv++)
+    {
+        if (VehicleInfo[vv][vID] == vehicleid)
+        {
+            VehicleInfo[vv][IsSpawned] = false;
+            VehicleInfo[vv][IsActive] = false;
+            VehicleInfo[vv][vID] = INVALID_VEHICLE_ID;
+            break; // Exit loop once the matching vehicle is found
+        }
+    }
+    return 1; // Indicate successful handling
+}
+*/
