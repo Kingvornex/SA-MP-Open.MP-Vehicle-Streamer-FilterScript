@@ -1,3 +1,28 @@
+# Seeking Help with SA-MP Vehicle Streamer - Server Limitations and Solutions
+
+Hello everyone,
+
+First of all, I want to clarify that I'm not a programmer and English is not my first language. I'm also using ChatGPT to help me with this post. 
+
+I'm working on a SA-MP server, and I encountered a limitation that I believe many of you might have faced as well. The default server limits are as follows:
+
+- **max_players**: 1000  
+- **max_vehicles**: 2000
+
+So, if we have a server with 1000 players, each player would ideally have two vehicles. However, I want to have more vehicles distributed across the entire game map. For example, I use a file filterscript to load **1700 vehicles** (specifically Grand Larceny vehicles) across the map, and another **400 vehicles** from my gamemode. 
+
+Here is where the problem starts: once the server reaches the 2000 vehicle limit, it can't create any more vehicles using commands, and some parts of the server become unfunctional. For example, the vehicle shop won't work, or players can't spawn new vehicles. Even though there might only be one player on the server and 2000 vehicles already loaded, most of these vehicles end up being useless. However, we still need them loaded because players may lose their vehicles across the map and need new ones.
+
+This brings me to the idea of having a **vehicle streamer**. I did some searching, but most of the solutions I found are edited versions of the old streamer plugin, which are outdated and no longer maintained. The original plugin also never added vehicle streaming, even after many years. 
+
+To solve this, I created a filterscript that loads streamed vehicles. However, the script is quite slow, laggy, and incomplete, though it works to some extent. If anyone is interested, here is the link to my script on GitHub:  
+[SA-MP Open.MP Vehicle Streamer FilterScript](https://github.com/Kingvornex/SA-MP-Open.MP-Vehicle-Streamer-FilterScript)
+
+I’m hoping to get some feedback or suggestions on how I could improve this, or if anyone has experience with a better solution for streaming vehicles efficiently without hitting the server limits. Any help or pointers would be greatly appreciated!
+
+Thank you!
+
+
 # SA-MP Open.MP Vehicle Streamer FilterScript
 
 ![GitHub](https://img.shields.io/github/license/Kingvornex/SA-MP-Open.MP-Vehicle-Streamer-FilterScript)
