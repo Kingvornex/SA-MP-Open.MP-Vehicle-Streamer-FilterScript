@@ -101,3 +101,107 @@ public OnPlayerEnterVehicle(playerid, vehicleid, isPassenger)
     SendClientMessage(playerid, COLOR_GREEN, "Vehicle streamed in!");
     return 1;
 }
+
+Sure! Here's the **README.md** in markdown format for the **SA-MP Open.MP Vehicle Streamer FilterScript** project:
+
+```markdown
+# SA-MP Open.MP Vehicle Streamer FilterScript
+
+![Project Logo](https://img.shields.io/github/license/Kingvornex/SA-MP-Open.MP-Vehicle-Streamer-FilterScript)
+![Issues](https://img.shields.io/github/issues/Kingvornex/SA-MP-Open.MP-Vehicle-Streamer-FilterScript)
+
+A simple and efficient Vehicle Streamer FilterScript for **SA-MP** and **Open.MP** that allows server owners to easily manage vehicles on their servers.
+
+## Table of Contents
+
+- [Description](#description)
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Commands](#commands)
+- [Contributing](#contributing)
+- [License](#license)
+- [Acknowledgements](#acknowledgements)
+
+## Description
+
+This **Vehicle Streamer FilterScript** was created to provide **SA-MP** and **Open.MP** server owners with an easy-to-use solution to stream vehicles on their servers. With this filter script, you can efficiently load and manage vehicles, which improves performance and scalability for large-scale server setups. The script is optimized for both **SA-MP** and **Open.MP**, ensuring compatibility across different platforms.
+
+## Features
+
+- Stream vehicles in real-time.
+- Fully compatible with **SA-MP** and **Open.MP** servers.
+- Easy-to-use configuration for vehicle streaming.
+- Supports a variety of vehicle types.
+- Optimized performance for large server environments.
+
+## Installation
+
+To install the **Vehicle Streamer FilterScript** on your **SA-MP** or **Open.MP** server, follow these steps:
+
+### 1. Download the Repository
+
+Clone the repository to your local machine or server:
+
+```bash
+git clone https://github.com/Kingvornex/SA-MP-Open.MP-Vehicle-Streamer-FilterScript.git
+```
+
+### 2. Place the Files
+
+- Copy the contents of the repository to your server's `filterscripts` folder.
+- Ensure that the `.pwn` and `.amx` files are placed in the appropriate directory.
+
+### 3. Add to `server.cfg`
+
+Edit the `server.cfg` file and add the following line to load the filter script:
+
+```
+filterscripts vehicle_streamer
+```
+
+### 4. Restart Server
+
+Restart your server to apply the changes.
+
+## Usage
+
+To use the **Vehicle Streamer FilterScript**, you need to configure it via the provided `config` file. Once configured, the vehicles will automatically stream into the game as per your settings.
+
+### Example Configuration:
+
+```ini
+; config.ini
+[Streaming]
+EnableVehicleStreaming=true
+MaxVehicles=100
+```
+
+## Commands
+
+- `/streamvehicle [vehicle_id]`: Streams a specific vehicle by its ID.
+- `/removevehicle [vehicle_id]`: Removes a vehicle from the stream.
+
+## Contributing
+
+Contributions are welcome! If you have any suggestions or improvements, feel free to fork the repository and submit a pull request. Please ensure your code adheres to the existing style and includes relevant tests.
+
+### Steps to Contribute:
+
+1. Fork the repository.
+2. Create a new branch for your feature (`git checkout -b feature-name`).
+3. Commit your changes (`git commit -am 'Add new feature'`).
+4. Push to the branch (`git push origin feature-name`).
+5. Open a pull request.
+
+## License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgements
+
+- **SA-MP** and **Open.MP** developers for creating the platforms.
+- **GitHub** for hosting this repository.
+```
+
+This is the markdown version for the **README.md** that you can use directly for your project. Let me know if you need further adjustments!
