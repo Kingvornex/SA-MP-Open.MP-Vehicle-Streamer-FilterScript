@@ -153,7 +153,7 @@ public VehicleSeeker()
         // If vehicle is not spawned and a player is in range, create the vehicle
         if (VehicleInfo[v][IsSpawned] == false && isInRange == true)
         {
-//            printf("[DEBUG] Spawning vehicle %d", v);
+            if(VSD == true) { printf("[DEBUG] Spawning vehicle: StreamID: %d, VehicleID: %d", v, VehicleInfo[v][vID]); }
             CreateTheVehicle(v);
             VehicleInfo[v][IsActive] = true;  // Mark vehicle as active
         }
@@ -163,13 +163,13 @@ public VehicleSeeker()
             // If no player is in range, destroy the vehicle
             if (isInRange == false)
             {
-                printf("[DEBUG] Destroying vehicle %d", v);
+                if(VSD == true) { printf("[DEBUG] Destroying vehicle: StreamID: %d, VehicleID: %d", v, VehicleInfo[v][vID]); }
                 DestroyTheVehicle(v);
                 VehicleInfo[v][IsActive] = false;  // Mark vehicle as inactive
             }
             else  // If a player is in range, update vehicle properties
             {
- //               printf("[DEBUG] Updating vehicle %d", v);
+                if(VSD == true) { printf("[DEBUG] Updating vehicle: StreamID: %d, VehicleID: %d", v, VehicleInfo[v][vID]); }
 
                 // Update the vehicle's position, angle, and health
                 GetVehiclePos(VehicleInfo[v][vID], VehicleInfo[v][vLastX], VehicleInfo[v][vLastY], VehicleInfo[v][vLastZ]);
