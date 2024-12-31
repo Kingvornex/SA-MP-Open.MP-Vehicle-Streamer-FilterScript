@@ -101,10 +101,8 @@ public OnPlayerEnterVehicle(playerid, vehicleid, isPassenger)
     SendClientMessage(playerid, COLOR_GREEN, "Vehicle streamed in!");
     return 1;
 }
+```
 
-Sure! Here's the **README.md** in markdown format for the **SA-MP Open.MP Vehicle Streamer FilterScript** project:
-
-```markdown
 # SA-MP Open.MP Vehicle Streamer FilterScript
 
 ![Project Logo](https://img.shields.io/github/license/Kingvornex/SA-MP-Open.MP-Vehicle-Streamer-FilterScript)
