@@ -658,3 +658,26 @@ public OnPlayerConnect(playerid)
 	return 1;
 }
 */
+/*
+public OnVehicleDestroy(vehicleid)
+{
+    // Loop through all streamable vehicles to find the matching vehicle ID
+    for (new vv = 0; vv < MAX_STREAM_VEHICLES; vv++)
+    {
+        // Check if the vehicle ID matches the destroyed vehicle
+        if (VehicleInfo[vv][vID] == vehicleid)
+        {
+            if (VSD == true)
+            {
+                printf("[DEBUG] OnVehicleDestroy: VehicleID: %d, StreamID: %d", vehicleid, vv);
+            }
+            // Mark the vehicle as no longer spawned and update its status
+            VehicleInfo[vv][IsSpawned] = false;
+            VehicleInfo[vv][IsActive] = false;
+            VehicleInfo[vv][vID] = INVALID_VEHICLE_ID;
+            return 1; // Exit after handling the matching vehicle
+        }
+    }
+    return 1; // Return for vehicles not tracked in the streamer
+}
+*/
