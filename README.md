@@ -1,3 +1,8 @@
+# 2 wats to make code lighter
+1. load vehilces in one area based on player location area (zone):
+* there is already zone detector code, for example if player is in bone county load vehicles from bone.txt file then if he leaves area unload them
+2. check each vehicle zone area name and save it and create vehicles if the vehicle zone area name and player zone area name is the same.
+
 # SA-MP-Open.MP-Vehicle-Streamer-FilterScript
 
 This project is a dynamic vehicle streamer plugin for San Andreas Multiplayer (SA-MP). The primary goal is to exceed the default vehicle limits in the game by implementing a chunk-based streaming system. This allows for more efficient handling of vehicles within the multiplayer environment1. The plugin is coded in C++, avoiding pawn payloads to enhance performance. It's currently under development and aims to provide a smoother and more immersive experience for SA-MP players2.
