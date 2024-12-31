@@ -1,5 +1,12 @@
 # SA-MP Open.MP Vehicle Streamer FilterScript
 
+![GitHub](https://img.shields.io/github/license/Kingvornex/SA-MP-Open.MP-Vehicle-Streamer-FilterScript)
+![GitHub Repo stars](https://img.shields.io/github/stars/Kingvornex/SA-MP-Open.MP-Vehicle-Streamer-FilterScript?style=social)
+![GitHub issues](https://img.shields.io/github/issues/Kingvornex/SA-MP-Open.MP-Vehicle-Streamer-FilterScript)
+![GitHub forks](https://img.shields.io/github/forks/Kingvornex/SA-MP-Open.MP-Vehicle-Streamer-FilterScript?style=social)
+![GitHub last commit](https://img.shields.io/github/last-commit/Kingvornex/SA-MP-Open.MP-Vehicle-Streamer-FilterScript)
+![GitHub contributors](https://img.shields.io/github/contributors/Kingvornex/SA-MP-Open.MP-Vehicle-Streamer-FilterScript)
+
 ## Overview
 
 The **SA-MP Open.MP Vehicle Streamer FilterScript** is designed to improve vehicle handling and performance in **San Andreas Multiplayer (SA-MP)** and **Open.MP** by dynamically streaming vehicles for players. This allows vehicles to be loaded and unloaded based on player proximity, which optimizes the server’s performance by reducing the number of vehicles that need to be actively rendered for every player.
