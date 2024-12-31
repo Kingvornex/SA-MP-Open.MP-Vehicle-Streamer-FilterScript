@@ -3,189 +3,212 @@
 
 #include <open.mp>
 
-#define MAX_STREAM_VEHICLES 3000
+// Define constants for configuration.
+#define MAX_STREAM_VEHICLES 3000  // Maximum number of streamable vehicles.
 
-#define VEHICLE_STREAM_DISTANCE 500
-#define RESPAWN_DELAY 1800
-#define VEHICLE_SEEKER_DELAY 100
+#define VEHICLE_STREAM_DISTANCE 500  // Distance at which vehicles are streamed to players.
+#define RESPAWN_DELAY 1800  // Vehicle respawn delay in seconds (30 minutes).
+#define VEHICLE_SEEKER_DELAY 100  // Delay between vehicle streaming checks (in milliseconds).
 
+// Macro to simplify creating loops.
 #define Loop(%0,%1) for(new %0 = 0; %0 < %1; %0++)
 
-new bool:VSD = true; //debug
+// Debugging flag.
+new bool:VSD = true; // Enable/disable debug logging.
 
+// Enumeration for vehicle properties stored in the streamable vehicle array.
 enum Stream_vehicle
 {
-	vModel,
-	vID,
-	vColor1,
-	vColor2,
-	Float:vSpawnX,
-	Float:vSpawnY,
-	Float:vSpawnZ,
-	Float:vSpawnA,
-	Float:vLastX,
-	Float:vLastY,
-	Float:vLastZ,
-	Float:vLastA,
-	vPlate[32],
-	vPaintJob,
-	bool:FirstSpawn,
-	bool:IsSpawned,
-	bool:IsActive,
-	bool:IsPopulated,
-	vInterior,
-	vWorld,
-	vStream,
-	vSiren,
-	vRespawn,
-	Float:vHealth
+	vModel,         // Vehicle model ID.
+	vID,            // Vehicle ID (unique in-game ID).
+	vColor1,        // Primary color of the vehicle.
+	vColor2,        // Secondary color of the vehicle.
+	Float:vSpawnX,  // Vehicle spawn X coordinate.
+	Float:vSpawnY,  // Vehicle spawn Y coordinate.
+	Float:vSpawnZ,  // Vehicle spawn Z coordinate.
+	Float:vSpawnA,  // Vehicle spawn rotation angle.
+	Float:vLastX,   // Vehicle's last X position.
+	Float:vLastY,   // Vehicle's last Y position.
+	Float:vLastZ,   // Vehicle's last Z position.
+	Float:vLastA,   // Vehicle's last rotation angle.
+	vPlate[32],     // Vehicle's license plate.
+	vPaintJob,      // Vehicle's paint job.
+	bool:FirstSpawn,// Indicates if the vehicle is being spawned for the first time.
+	bool:IsSpawned, // Indicates if the vehicle is currently spawned in the game world.
+	bool:IsActive,  // Indicates if the vehicle is active (in range of players).
+	bool:IsPopulated, // Indicates if the vehicle is populated with data.
+	vInterior,      // Interior ID for the vehicle.
+	vWorld,         // Virtual world ID for the vehicle.
+	vStream,        // Stream distance for the vehicle.
+	vSiren,         // Indicates if the vehicle has a siren.
+	vRespawn,       // Respawn delay for the vehicle.
+	Float:vHealth   // Vehicle health.
 }
-new VehicleInfo[MAX_STREAM_VEHICLES][Stream_vehicle];
+new VehicleInfo[MAX_STREAM_VEHICLES][Stream_vehicle]; // Array to store vehicle properties.
 
-new lastsvid = 0;
-
-new total_vehicles_from_files=0;
-
-new Seekingid;
+// Variables to keep track of vehicle data.
+new lastsvid = 0; // Last streamable vehicle ID.
+new total_vehicles_from_files = 0; // Total vehicles loaded from file.
+new Seekingid; // ID for the seeker timer.
 
 // new _p_VisibleVehicles[MAX_PLAYERS];
 
+// Forward declaration for the VehicleSeeker function.
 forward VehicleSeeker();
 
+// Start the vehicle seeker, which streams vehicles near players.
 stock StartVehicleSeeking()
 {
-	Seekingid = SetTimer("VehicleSeeker", VEHICLE_SEEKER_DELAY, true);
+	Seekingid = SetTimer("VehicleSeeker", VEHICLE_SEEKER_DELAY, true); // Set a repeating timer for the seeker.
 	if(VSD == true) { printf("[Vehicle Streamer] [DEBUG]: Seekingid (%d) = SetTimer(VehicleSeeker, VEHICLE_SEEKER_DELAY (%d), true);", Seekingid, VEHICLE_SEEKER_DELAY); }
 	return 1;
 }
 
+// Stop the vehicle seeker by killing the timer.
 stock StopVehicleSeeking()
 {
-	KillTimer(Seekingid);
+	KillTimer(Seekingid); // Kill the seeker timer.
 	if(VSD == true) { printf("[Vehicle Streamer] [DEBUG]: KillTimer(Seekingid (%d));", Seekingid); }
 	return 1;
 }
 
+// Check if a vehicle is in range of any player.
 stock bool:IsInRangeOfAnyPlayer(vv)
 {
-	Loop(i, MAX_PLAYERS)
+	Loop(i, MAX_PLAYERS) // Iterate through all players.
 	{
-		new Float:posx, Float:posy, Float:posz;
-		GetPlayerPos(i, posx, posy, posz);
-		new Float:tempposx, Float:tempposy, Float:tempposz;
-		tempposx = (VehicleInfo[vv][vLastX] -posx);
-        tempposy = (VehicleInfo[vv][vLastY] -posy);
-        tempposz = (VehicleInfo[vv][vLastZ] -posz);
-		new radi = VehicleInfo[vv][vStream];
+		new Float:posx, Float:posy, Float:posz; // Player position variables.
+		GetPlayerPos(i, posx, posy, posz); // Get the player's position.
+		new Float:tempposx, Float:tempposy, Float:tempposz; // Temporary variables for position differences.
+		tempposx = (VehicleInfo[vv][vLastX] - posx); // X difference.
+        tempposy = (VehicleInfo[vv][vLastY] - posy); // Y difference.
+        tempposz = (VehicleInfo[vv][vLastZ] - posz); // Z difference.
+		new radi = VehicleInfo[vv][vStream]; // Stream distance for the vehicle.
         if( ((tempposx < radi) && (tempposx > -radi)) && ((tempposy < radi) && (tempposy > -radi)) && ((tempposz < radi) && (tempposz > -radi)) )
         {
 			if(VSD == true) { printf("IsInRangeOfAnyPlayer(PID: %d, SVID: %d, VID: %d) = true", i, vv, VehicleInfo[vv][vID]); }
-            return true;
+            return true; // Vehicle is within range of a player.
         }
     }
-    return false;
+    return false; // Vehicle is not in range of any player.
 }
 
-/*
+/* 
+// copy from CheckpointManager2.inc
 public VehicleSeeker()
 {
-	new Float:__posX, Float:__posY, Float:__posZ;
-	new __interior;
-	new __virtualWorld;
-//	Loop(svid, MAX_STREAM_VEHICLES)
-	Loop(i, MAX_PLAYERS)
-	{
-//		printf("%d", svid);
-//		Loop(i, MAX_PLAYERS)
-//		{
-		if(!IsPlayerConnected(i)) continue;
-		
-		GetPlayerPos(i, Float:__posX, Float:__posY, Float:__posZ);
-		// Is the player near any Vehicle?
-		if(_p_VisibleVehicles[i] > -1)
-		{
-			// If the player is no longer near that point
-			if(__posX < (VehicleInfo[_p_VisibleVehicles[i]][vSpawnX] - VehicleInfo[_p_VisibleVehicles[i]][vStream])
-			|| __posX > (VehicleInfo[_p_VisibleVehicles[i]][vSpawnX] + VehicleInfo[_p_VisibleVehicles[i]][vStream])
-			|| __posY < (VehicleInfo[_p_VisibleVehicles[i]][vSpawnY] - VehicleInfo[_p_VisibleVehicles[i]][vStream])
-			|| __posY > (VehicleInfo[_p_VisibleVehicles[i]][vSpawnY] + VehicleInfo[_p_VisibleVehicles[i]][vStream])
-			|| __posZ < (VehicleInfo[_p_VisibleVehicles[i]][vSpawnZ] - VehicleInfo[_p_VisibleVehicles[i]][vStream])
-			|| __posZ > (VehicleInfo[_p_VisibleVehicles[i]][vSpawnZ] + VehicleInfo[_p_VisibleVehicles[i]][vStream]))
-			{
-				DestroyTheVehicle(i);
-				_p_VisibleVehicles[i] = -1;
-			}
-		}
-		else
-		{
-			// Getting the player Interior and virtual world
-			__interior = GetPlayerInterior(i);
-			__virtualWorld = GetPlayerVirtualWorld(i);
-			
-			// Looking for a new Vehicle
-			Loop(j, MAX_STREAM_VEHICLES)
-			{
-				if(!VehicleInfo[j][IsPopulated]) continue;
-				if(VehicleInfo[j][vInterior] != __interior) continue;
-				if(VehicleInfo[j][vWorld] != __virtualWorld) continue;
-				
-				if(__posX > (VehicleInfo[j][vSpawnX] - VehicleInfo[j][vStream])
-				&& __posX < (VehicleInfo[j][vSpawnX] + VehicleInfo[j][vStream])
-				&& __posY > (VehicleInfo[j][vSpawnY] - VehicleInfo[j][vStream])
-				&& __posY < (VehicleInfo[j][vSpawnY] + VehicleInfo[j][vStream])
-				&& __posZ > (VehicleInfo[j][vSpawnZ] - VehicleInfo[j][vStream])
-				&& __posZ < (VehicleInfo[j][vSpawnZ] + VehicleInfo[j][vStream]))
-				{
-					CreateVehicle(VehicleInfo[j][vModel], VehicleInfo[j][vSpawnX], VehicleInfo[j][vSpawnY], VehicleInfo[j][vSpawnZ], VehicleInfo[j][vSpawnA], VehicleInfo[j][vColor1], VehicleInfo[j][vColor2], VehicleInfo[j][vRespawn], bool:VehicleInfo[j][vSiren]);
-					_p_VisibleVehicles[i] = j;
-					break;
-				}
-			}
-		}
-	}
-	return 1;
+    // Declaring temporary variables for player position, interior, and virtual world
+    new Float:__posX, Float:__posY, Float:__posZ;
+    new __interior;
+    new __virtualWorld;
+
+    // Loop through all players
+    Loop(i, MAX_PLAYERS)
+    {
+        // Skip the iteration if the player is not connected
+        if (!IsPlayerConnected(i)) continue;
+        
+        // Get the position of the player
+        GetPlayerPos(i, Float:__posX, Float:__posY, Float:__posZ);
+
+        // Check if the player is near any vehicle (i.e., if the player has any vehicle assigned to them in the _p_VisibleVehicles array)
+        if (_p_VisibleVehicles[i] > -1)
+        {
+            // If the player is no longer near the vehicle (out of streaming range)
+            if (__posX < (VehicleInfo[_p_VisibleVehicles[i]][vSpawnX] - VehicleInfo[_p_VisibleVehicles[i]][vStream])   // Player's X is too far left
+                || __posX > (VehicleInfo[_p_VisibleVehicles[i]][vSpawnX] + VehicleInfo[_p_VisibleVehicles[i]][vStream])   // Player's X is too far right
+                || __posY < (VehicleInfo[_p_VisibleVehicles[i]][vSpawnY] - VehicleInfo[_p_VisibleVehicles[i]][vStream])   // Player's Y is too far behind
+                || __posY > (VehicleInfo[_p_VisibleVehicles[i]][vSpawnY] + VehicleInfo[_p_VisibleVehicles[i]][vStream])   // Player's Y is too far ahead
+                || __posZ < (VehicleInfo[_p_VisibleVehicles[i]][vSpawnZ] - VehicleInfo[_p_VisibleVehicles[i]][vStream])   // Player's Z is too far below
+                || __posZ > (VehicleInfo[_p_VisibleVehicles[i]][vSpawnZ] + VehicleInfo[_p_VisibleVehicles[i]][vStream]))   // Player's Z is too far above
+            {
+                // If the player is out of range, destroy the vehicle
+                DestroyTheVehicle(i);
+                // Reset the vehicle index for this player
+                _p_VisibleVehicles[i] = -1;
+            }
+        }
+        else
+        {
+            // Get the player's interior and virtual world (this ensures that the vehicle search is within the same environment)
+            __interior = GetPlayerInterior(i);
+            __virtualWorld = GetPlayerVirtualWorld(i);
+
+            // Look for a new vehicle for the player
+            Loop(j, MAX_STREAM_VEHICLES)
+            {
+                // Skip vehicles that are not populated (i.e., haven't been created yet)
+                if (!VehicleInfo[j][IsPopulated]) continue;
+
+                // Skip vehicles that are in a different interior or virtual world than the player
+                if (VehicleInfo[j][vInterior] != __interior) continue;
+                if (VehicleInfo[j][vWorld] != __virtualWorld) continue;
+
+                // Check if the player is within the streaming range of this vehicle (using the same range logic as before)
+                if (__posX > (VehicleInfo[j][vSpawnX] - VehicleInfo[j][vStream])
+                    && __posX < (VehicleInfo[j][vSpawnX] + VehicleInfo[j][vStream])
+                    && __posY > (VehicleInfo[j][vSpawnY] - VehicleInfo[j][vStream])
+                    && __posY < (VehicleInfo[j][vSpawnY] + VehicleInfo[j][vStream])
+                    && __posZ > (VehicleInfo[j][vSpawnZ] - VehicleInfo[j][vStream])
+                    && __posZ < (VehicleInfo[j][vSpawnZ] + VehicleInfo[j][vStream]))
+                {
+                    // If the player is within the vehicle's range, create the vehicle for them
+                    CreateVehicle(VehicleInfo[j][vModel], VehicleInfo[j][vSpawnX], VehicleInfo[j][vSpawnY], VehicleInfo[j][vSpawnZ], VehicleInfo[j][vSpawnA], VehicleInfo[j][vColor1], VehicleInfo[j][vColor2], VehicleInfo[j][vRespawn], bool:VehicleInfo[j][vSiren]);
+                    // Assign this vehicle to the player in the _p_VisibleVehicles array
+                    _p_VisibleVehicles[i] = j;
+                    // Stop looking for other vehicles once one is found
+                    break;
+                }
+            }
+        }
+    }
+    return 1;  // Return 1 to indicate the function finished successfully
 }
+
 */
 
+// Vehicle seeker function, which checks all vehicles and spawns or destroys them based on proximity to players
 public VehicleSeeker()
 {
-	Loop(v, MAX_STREAM_VEHICLES)
-	{
-		if(VehicleInfo[v][IsPopulated] == true)
-		{
-			if(VehicleInfo[v][IsSpawned] == false)
-			{
-				if(IsInRangeOfAnyPlayer(v) == true)
-				{
-					CreateTheVehicle(v);
-					VehicleInfo[v][IsActive] = true;
-					// also more actions 
-				}
-			}
-			if(VehicleInfo[v][IsSpawned] == true)
-			{				
-				if(IsInRangeOfAnyPlayer(v) == false)
-				{
-					DestroyTheVehicle(v);
-					VehicleInfo[v][IsActive] = false; 
-					// also more actions 
-				}
-				if(IsInRangeOfAnyPlayer(v) == true)
-				{
-					GetVehiclePos(VehicleInfo[v][vID], VehicleInfo[v][vLastX], VehicleInfo[v][vLastY], VehicleInfo[v][vLastZ]);
-					GetVehicleZAngle(VehicleInfo[v][vID], VehicleInfo[v][vLastA]);
-					VehicleInfo[v][IsActive] = true; 
-				}
-			}
-		}
-	}
-	return 1;
+    Loop(v, MAX_STREAM_VEHICLES)  // Loop through all vehicles
+    {
+        if (VehicleInfo[v][IsPopulated] == true)  // Check if the vehicle is populated (has data)
+        {
+            if (VehicleInfo[v][IsSpawned] == false)  // If vehicle is not spawned
+            {
+                if (IsInRangeOfAnyPlayer(v) == true)  // Check if any player is in range
+                {
+                    CreateTheVehicle(v);  // Create the vehicle if in range
+                    VehicleInfo[v][IsActive] = true;  // Mark vehicle as active
+                }
+            }
+            if (VehicleInfo[v][IsSpawned] == true)  // If the vehicle is already spawned
+            {
+                if (IsInRangeOfAnyPlayer(v) == false)  // If no player is in range
+                {
+                    DestroyTheVehicle(v);  // Destroy the vehicle if out of range
+                    VehicleInfo[v][IsActive] = false;  // Mark vehicle as inactive
+                }
+                if (IsInRangeOfAnyPlayer(v) == true)  // If a player is in range again
+                {
+                    GetVehiclePos(VehicleInfo[v][vID], VehicleInfo[v][vLastX], VehicleInfo[v][vLastY], VehicleInfo[v][vLastZ]);  // Update vehicle position
+                    GetVehicleZAngle(VehicleInfo[v][vID], VehicleInfo[v][vLastA]);  // Update vehicle angle
+                    VehicleInfo[v][IsActive] = true;  // Mark vehicle as active again
+					GetVehicleHealth(VehicleInfo[v][vID], VehicleInfo[v][vHealth]); // Retrieve and store the current vehicle health
+                }
+            }
+        }
+    }
+    return 1;
 }
 
+// Function to create a vehicle at a specific location
 stock CreateStreamVehicle(modelid, Float:spawnX, Float:spawnY, Float:spawnZ, Float:angle, colour1, colour2, respawnDelay = RESPAWN_DELAY, bool:addSiren = true, Stream_Distance = VEHICLE_STREAM_DISTANCE)
 {
 	if(lastsvid > MAX_STREAM_VEHICLES) return printf("[Vehicle Streamer]: %d > %d", lastsvid, MAX_STREAM_VEHICLES);
-	
+	    
+	// Assign vehicle data to the VehicleInfo array
+
 	VehicleInfo[lastsvid][vModel] = modelid;
 	VehicleInfo[lastsvid][vColor1] = colour1;
 	VehicleInfo[lastsvid][vColor2] = colour2;
@@ -222,16 +245,20 @@ stock CreateStreamVehicle(modelid, Float:spawnX, Float:spawnY, Float:spawnZ, Flo
        lastsvid);
 	}
 	
-	lastsvid++;
+	lastsvid++; // Increment the last stream vehicle ID.
 
 	return lastsvid;
 }
 
+// Function to actually create the vehicle in the game world
 stock CreateTheVehicle(vv)
 {
+	if(VehicleInfo[vv][IsSpawned] == true) return printf("[DEBUG] [Vehicle Streamer] Vehicle already Spawed!!! (VehicleID: %d)", VehicleInfo[vv][vID]);   // If the vehicle is not already spawned
+	
 	VehicleInfo[vv][vID] = CreateVehicle(VehicleInfo[vv][vModel], VehicleInfo[vv][vLastX], VehicleInfo[vv][vLastY], VehicleInfo[vv][vLastZ], VehicleInfo[vv][vLastA], VehicleInfo[vv][vColor1], VehicleInfo[vv][vColor2], VehicleInfo[vv][vRespawn], bool:VehicleInfo[vv][vSiren]);
 	VehicleInfo[vv][FirstSpawn] = false;
 	VehicleInfo[vv][IsSpawned] = true;
+	SetVehicleHealth(VehicleInfo[vv][vID], VehicleInfo[vv][vHealth]);  // Set the vehicle's health
 	if(VSD == true)
 	{ 
     printf("CreateTheVehicle(VehicleID: %d, %d, %.0f, %.0f, %.0f, %.0f, %d, %d, %d, bool:addSiren, lastsvid: %d)", 
@@ -247,6 +274,7 @@ stock CreateTheVehicle(vv)
            VehicleInfo[vv][vStream],
            lastsvid); 
 	}
+	return VehicleInfo[vv][vID];
 }
 
 stock DestroyTheVehicle(vv)
@@ -378,26 +406,6 @@ stock RandomPlate(svid)
 //	SetVehicleToRespawn(svid);
 }
 
-forward ProxDetector(Float:radi, playerid, svid);
-public ProxDetector(Float:radi, playerid, svid)
-{
-    if(IsPlayerConnected(playerid))
-    {
-        new Float:posx, Float:posy, Float:posz;
-        new Float:oldposx, Float:oldposy, Float:oldposz;
-        new Float:tempposx, Float:tempposy, Float:tempposz;
-        GetPlayerPos(playerid, oldposx, oldposy, oldposz);
-        tempposx = (oldposx -posx);
-        tempposy = (oldposy -posy);
-        tempposz = (oldposz -posz);
-        if (((tempposx < radi) && (tempposx > -radi)) && ((tempposy < radi) && (tempposy > -radi)) && ((tempposz < radi) && (tempposz > -radi)))
-        {
-            return 1;
-        }
-    }
-    return 0;
-}
-
 stock LoadStaticVehiclesFromFile(const filename[])
 {
 	new File:file_ptr;
@@ -495,7 +503,7 @@ stock token_by_delim(const string[], return_str[], delim, start_index)
 
 public OnFilterScriptInit()
 {    
-/*	Loop(svidd, MAX_STREAM_VEHICLES)
+	Loop(svidd, MAX_STREAM_VEHICLES)
 	{	
 		VehicleInfo[svidd][vModel] = 400;
 		VehicleInfo[svidd][vColor1] = 0;
@@ -509,7 +517,7 @@ public OnFilterScriptInit()
 		VehicleInfo[svidd][IsActive] = false;
 		VehicleInfo[svidd][vHealth] = 0;
 		VehicleInfo[svidd][vID] = INVALID_VEHICLE_ID;
-	}*/
+	}
 //	gl_common vehicles (grand larceny)
 	// SPECIAL
 //	total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/trains.txt");
@@ -552,3 +560,28 @@ public OnFilterScriptInit()
 	return 1;
 }
 
+// This function is called when the filter script is about to exit.
+public OnFilterScriptExit()
+{
+    // Check if the VehicleSeeker timer is active and stop it to prevent it from running after the script exits.
+    if (IsValidTimer(Seekingid)) // Verify that the timer ID is valid.
+    {
+        StopVehicleSeeking(); // Stop the vehicle seeking timer.
+    }
+
+    // Loop through all vehicles in the VehicleInfo array.
+    Loop(i, MAX_STREAM_VEHICLES)
+    {
+        // Check if the vehicle is marked as spawned in the VehicleInfo array.
+        if (VehicleInfo[i][IsSpawned] == true)
+        {
+            DestroyTheVehicle(i); // Destroy the vehicle to free resources.
+        }
+    }
+
+    // Log a message to the console to indicate that the filter script is exiting.
+    // This helps with debugging and ensures that resources were properly cleaned up.
+    printf("[Vehicle Streamer] FilterScript is exiting, all vehicles destroyed and timers stopped.");
+
+    return 1; // Returning 1 indicates that the script handled the exit process successfully.
+}
