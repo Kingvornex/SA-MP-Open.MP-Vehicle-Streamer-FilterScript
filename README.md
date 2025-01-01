@@ -4,6 +4,7 @@
 2. check each vehicle zone area name and save it and create vehicles if the vehicle zone area name and player zone area name is the same.
 
 # SA-MP-Open.MP-Vehicle-Streamer-FilterScript
+The SA-MP/Open.MP Vehicle Streamer is a dynamic filter script for Grand Theft Auto: San Andreas Multiplayer (SA-MP) and Open.MP. It efficiently manages vehicle streaming, allowing seamless creation, removal, and visibility of vehicles across servers. Ideal for optimizing server performance and enhancing the multiplayer experience.
 
 # Seeking Help with SA-MP Vehicle Streamer - Server Limitations and Solutions
 
