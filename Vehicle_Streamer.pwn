@@ -1,12 +1,15 @@
 
-// ACNR CARS from file
+// Stream Vehicles from file
 
 #include <open.mp>
 #include <YSI-Includes\YSI_Data\y_iterate>
 
 // Define constants for configuration.
 #define MAX_STREAM_VEHICLES 3000  // Maximum number of streamable vehicles.
-
+/*
+// Declare the iterator for vehicles.
+new Iterator:VehicleIter<MAX_STREAM_VEHICLES>;
+*/
 #define VEHICLE_STREAM_DISTANCE 100  // Distance at which vehicles are streamed to players.
 #define RESPAWN_DELAY 20000  // Vehicle respawn delay in seconds (30 minutes).
 #define VEHICLE_SEEKER_DELAY 100  // Delay between vehicle streaming checks (in milliseconds).
@@ -39,16 +42,19 @@ enum Stream_vehicle
 	bool:IsSpawned, // Indicates if the vehicle is currently spawned in the game world.
 	bool:IsActive,  // Indicates if the vehicle is active (in range of players).
 	bool:IsPopulated, // Indicates if the vehicle is populated with data.
+	bool:IsOcupied, // Indicates if the vehicle is Ocupied with data.
 	vInterior,      // Interior ID for the vehicle.
 	vWorld,         // Virtual world ID for the vehicle.
 	vStream,        // Stream distance for the vehicle.
 	vSiren,         // Indicates if the vehicle has a siren.
-	vRespawn,       // Respawn delay for the vehicle.
+	vRespawn,		// Respawn delay for the vehicle.
+	vMods[12], 		// Array to store Vehicle Mods associated with the vehicle.      
+	vPlayerID[9],	// Array to store player IDs associated with the vehicle. Bus has 9 seats.
 	Float:vHealth   // Vehicle health.
 }
-new VehicleInfo[MAX_STREAM_VEHICLES][Stream_vehicle]; // Array to store vehicle properties.
+new vInfo[MAX_STREAM_VEHICLES][Stream_vehicle]; // Array to store vehicle properties.
 
-new GetVehicleMods[MAX_STREAM_VEHICLES][12];
+new GetvMods[MAX_STREAM_VEHICLES][12];
 
 // Variables to keep track of vehicle data.
 
@@ -100,16 +106,17 @@ stock StopVehicleRespawner()
 
 public VehicleRespawner()
 {
+	//foreach (new vehicleid : VehicleIter)
 	Loop(vs, MAX_STREAM_VEHICLES)
 	{
 		if (vs < 0 || vs >= MAX_STREAM_VEHICLES) continue;
-		if (VehicleInfo[vs][IsPopulated] == false) continue;  // Skip unpopulated vehicles
-		if (VehicleInfo[vs][IsActive] == true) continue;
-		VehicleInfo[vs][vLastX] = VehicleInfo[vs][vSpawnX];
-		VehicleInfo[vs][vLastY] = VehicleInfo[vs][vSpawnY];
-		VehicleInfo[vs][vLastZ] = VehicleInfo[vs][vSpawnZ];
-		VehicleInfo[vs][vLastA] = VehicleInfo[vs][vSpawnA];
-		VehicleInfo[vs][FirstSpawn] = true;
+		if (vInfo[vs][IsPopulated] == false) continue;  // Skip unpopulated vehicles
+		if (vInfo[vs][IsActive] == true) continue;
+		vInfo[vs][vLastX] = vInfo[vs][vSpawnX];
+		vInfo[vs][vLastY] = vInfo[vs][vSpawnY];
+		vInfo[vs][vLastZ] = vInfo[vs][vSpawnZ];
+		vInfo[vs][vLastA] = vInfo[vs][vSpawnA];
+		vInfo[vs][FirstSpawn] = true;
 	}
 }
 
@@ -125,14 +132,14 @@ stock bool:IsInRangeOfAnyPlayer(vv)
 		GetPlayerPos(i, posx, posy, posz); // Get the player's position.
 		
 		new Float:tempposx, Float:tempposy, Float:tempposz; // Temporary variables for position differences.
-		tempposx = (VehicleInfo[vv][vLastX] - posx); // X difference.
-        tempposy = (VehicleInfo[vv][vLastY] - posy); // Y difference.
-        tempposz = (VehicleInfo[vv][vLastZ] - posz); // Z difference.
+		tempposx = (vInfo[vv][vLastX] - posx); // X difference.
+        tempposy = (vInfo[vv][vLastY] - posy); // Y difference.
+        tempposz = (vInfo[vv][vLastZ] - posz); // Z difference.
 
-		new radi = VehicleInfo[vv][vStream]; // Stream distance for the vehicle.
+		new radi = vInfo[vv][vStream]; // Stream distance for the vehicle.
         if( ((tempposx < radi) && (tempposx > -radi)) && ((tempposy < radi) && (tempposy > -radi)) && ((tempposz < radi) && (tempposz > -radi)) )
         {
-			if(VSD == true) { printf("IsInRangeOfAnyPlayer(PID: %d, SVID: %d, VID: %d) = true", i, vv, VehicleInfo[vv][vID]); }
+			if(VSD == true) { printf("IsInRangeOfAnyPlayer(PID: %d, SVID: %d, VID: %d) = true", i, vv, vInfo[vv][vID]); }
             return true; // Vehicle is within range of a player.
         }
     }
@@ -142,41 +149,42 @@ stock bool:IsInRangeOfAnyPlayer(vv)
 // Vehicle seeker function, which checks all vehicles and spawns or destroys them based on proximity to players
 public VehicleSeeker()
 {
+	//foreach (new vehicleid : VehicleIter)
     Loop(v, MAX_STREAM_VEHICLES)  // Loop through all vehicles
     {
 		if (v < 0 || v >= MAX_STREAM_VEHICLES) continue;
-		if (VehicleInfo[v][IsPopulated] == false) continue;  // Skip unpopulated vehicles
+		if (vInfo[v][IsPopulated] == false) continue;  // Skip unpopulated vehicles
 		
 		// Cache the result of proximity check
         new bool:isInRange = IsInRangeOfAnyPlayer(v);
 
         // If vehicle is not spawned and a player is in range, create the vehicle
-        if (VehicleInfo[v][IsSpawned] == false && isInRange == true)
+        if (vInfo[v][IsSpawned] == false && isInRange == true)
         {
-            if(VSD == true) { printf("[DEBUG] Spawning vehicle: StreamID: %d, VehicleID: %d", v, VehicleInfo[v][vID]); }
+            if(VSD == true) { printf("[DEBUG] Spawning vehicle: StreamID: %d, VehicleID: %d", v, vInfo[v][vID]); }
             CreateTheVehicle(v);
-            VehicleInfo[v][IsActive] = true;  // Mark vehicle as active
+            vInfo[v][IsActive] = true;  // Mark vehicle as active
         }
 		// If the vehicle is already spawned
-        if (VehicleInfo[v][IsSpawned] == true)
+        if (vInfo[v][IsSpawned] == true)
         {
             // If no player is in range, destroy the vehicle
             if (isInRange == false)
             {
-                if(VSD == true) { printf("[DEBUG] Destroying vehicle: StreamID: %d, VehicleID: %d", v, VehicleInfo[v][vID]); }
+                if(VSD == true) { printf("[DEBUG] Destroying vehicle: StreamID: %d, VehicleID: %d", v, vInfo[v][vID]); }
                 DestroyTheVehicle(v);
-                VehicleInfo[v][IsActive] = false;  // Mark vehicle as inactive
+                vInfo[v][IsActive] = false;  // Mark vehicle as inactive
             }
             else  // If a player is in range, update vehicle properties
             {
-                if(VSD == true) { printf("[DEBUG] Updating vehicle: StreamID: %d, VehicleID: %d", v, VehicleInfo[v][vID]); }
+                if(VSD == true) { printf("[DEBUG] Updating vehicle: StreamID: %d, VehicleID: %d", v, vInfo[v][vID]); }
 
                 // Update the vehicle's position, angle, and health
-                GetVehiclePos(VehicleInfo[v][vID], VehicleInfo[v][vLastX], VehicleInfo[v][vLastY], VehicleInfo[v][vLastZ]);
-                GetVehicleZAngle(VehicleInfo[v][vID], VehicleInfo[v][vLastA]);
-                GetVehicleHealth(VehicleInfo[v][vID], VehicleInfo[v][vHealth]);
+                GetVehiclePos(vInfo[v][vID], vInfo[v][vLastX], vInfo[v][vLastY], vInfo[v][vLastZ]);
+                GetVehicleZAngle(vInfo[v][vID], vInfo[v][vLastA]);
+                GetVehicleHealth(vInfo[v][vID], vInfo[v][vHealth]);
 
-                VehicleInfo[v][IsActive] = true;  // Mark vehicle as active again
+                vInfo[v][IsActive] = true;  // Mark vehicle as active again
             }
         }
     }
@@ -190,44 +198,44 @@ stock CreateStreamVehicle(modelid, Float:spawnX, Float:spawnY, Float:spawnZ, Flo
 	    
 	// Assign vehicle data to the VehicleInfo array
 
-	VehicleInfo[lastsvid][vModel] = modelid;
-	VehicleInfo[lastsvid][vColor1] = colour1;
-	VehicleInfo[lastsvid][vColor2] = colour2;
-	VehicleInfo[lastsvid][vSpawnX] = spawnX;
-	VehicleInfo[lastsvid][vSpawnY] = spawnY;
-	VehicleInfo[lastsvid][vSpawnZ] = spawnZ;
-	VehicleInfo[lastsvid][vSpawnA] = angle;
+	vInfo[lastsvid][vModel] = modelid;
+	vInfo[lastsvid][vColor1] = colour1;
+	vInfo[lastsvid][vColor2] = colour2;
+	vInfo[lastsvid][vSpawnX] = spawnX;
+	vInfo[lastsvid][vSpawnY] = spawnY;
+	vInfo[lastsvid][vSpawnZ] = spawnZ;
+	vInfo[lastsvid][vSpawnA] = angle;
 	
-	VehicleInfo[lastsvid][vLastX] = spawnX;
-	VehicleInfo[lastsvid][vLastY] = spawnY;
-	VehicleInfo[lastsvid][vLastZ] = spawnZ;
-	VehicleInfo[lastsvid][vLastA] = angle;
+	vInfo[lastsvid][vLastX] = spawnX;
+	vInfo[lastsvid][vLastY] = spawnY;
+	vInfo[lastsvid][vLastZ] = spawnZ;
+	vInfo[lastsvid][vLastA] = angle;
 
-	VehicleInfo[lastsvid][FirstSpawn] = true;
-	VehicleInfo[lastsvid][IsSpawned] = false;
-	VehicleInfo[lastsvid][IsActive] = false;
-	VehicleInfo[lastsvid][vHealth] = 1000;
-	VehicleInfo[lastsvid][vID] = INVALID_VEHICLE_ID;
-	VehicleInfo[lastsvid][IsPopulated] = true;
-	VehicleInfo[lastsvid][vStream] = Stream_Distance;
-	VehicleInfo[lastsvid][vSiren] = addSiren;
-	VehicleInfo[lastsvid][vRespawn] = respawnDelay;
+	vInfo[lastsvid][FirstSpawn] = true;
+	vInfo[lastsvid][IsSpawned] = false;
+	vInfo[lastsvid][IsActive] = false;
+	vInfo[lastsvid][vHealth] = 1000;
+	vInfo[lastsvid][vID] = INVALID_VEHICLE_ID;
+	vInfo[lastsvid][IsPopulated] = true;
+	vInfo[lastsvid][vStream] = Stream_Distance;
+	vInfo[lastsvid][vSiren] = addSiren;
+	vInfo[lastsvid][vRespawn] = respawnDelay;
 
 	if(VSD == true) { printf("CreateStreamVehicle(%d, %f, %f, %f, %f, %d, %d, %d, %d, bool:addSiren, lastsvid: %d)", 
-       VehicleInfo[lastsvid][vModel], 
-       VehicleInfo[lastsvid][vSpawnX], 
-       VehicleInfo[lastsvid][vSpawnY], 
-       VehicleInfo[lastsvid][vSpawnZ], 
-       VehicleInfo[lastsvid][vSpawnA], 
-       VehicleInfo[lastsvid][vColor1], 
-       VehicleInfo[lastsvid][vColor2], 
-       VehicleInfo[lastsvid][vRespawn], 
-       VehicleInfo[lastsvid][vStream], 
+       vInfo[lastsvid][vModel], 
+       vInfo[lastsvid][vSpawnX], 
+       vInfo[lastsvid][vSpawnY], 
+       vInfo[lastsvid][vSpawnZ], 
+       vInfo[lastsvid][vSpawnA], 
+       vInfo[lastsvid][vColor1], 
+       vInfo[lastsvid][vColor2], 
+       vInfo[lastsvid][vRespawn], 
+       vInfo[lastsvid][vStream], 
        lastsvid);
 	}
 	
 	lastsvid++; // Increment the last stream vehicle ID.
-
+	//Iter_Add(VehicleIter, i);
 	return lastsvid;
 }
 
@@ -235,34 +243,34 @@ stock CreateStreamVehicle(modelid, Float:spawnX, Float:spawnY, Float:spawnZ, Flo
 stock CreateTheVehicle(vv)
 {
     // Check if the vehicle is already spawned
-    if(VehicleInfo[vv][IsSpawned] == true) 
-        return printf("[DEBUG] [Vehicle Streamer] Vehicle already Spawed!!! (VehicleID: %d)", VehicleInfo[vv][vID]); 
+    if(vInfo[vv][IsSpawned] == true) 
+        return printf("[DEBUG] [Vehicle Streamer] Vehicle already Spawed!!! (VehicleID: %d)", vInfo[vv][vID]); 
 
     // Create the vehicle and store its ID
-    VehicleInfo[vv][vID] = CreateVehicle(
-        VehicleInfo[vv][vModel],      // Vehicle model
-        VehicleInfo[vv][vLastX],      // Last known X position
-        VehicleInfo[vv][vLastY],      // Last known Y position
-        VehicleInfo[vv][vLastZ],      // Last known Z position
-        VehicleInfo[vv][vLastA],      // Last known angle/rotation
-        VehicleInfo[vv][vColor1],     // Primary color
-        VehicleInfo[vv][vColor2],     // Secondary color
-        VehicleInfo[vv][vRespawn],    // Respawn state
-        bool:VehicleInfo[vv][vSiren]  // Siren enabled/disabled
+    vInfo[vv][vID] = CreateVehicle(
+        vInfo[vv][vModel],      // Vehicle model
+        vInfo[vv][vLastX],      // Last known X position
+        vInfo[vv][vLastY],      // Last known Y position
+        vInfo[vv][vLastZ],      // Last known Z position
+        vInfo[vv][vLastA],      // Last known angle/rotation
+        vInfo[vv][vColor1],     // Primary color
+        vInfo[vv][vColor2],     // Secondary color
+        vInfo[vv][vRespawn],    // Respawn state
+        bool:vInfo[vv][vSiren]  // Siren enabled/disabled
     );
 
     // Update vehicle metadata
-    VehicleInfo[vv][FirstSpawn] = false;  // Mark vehicle as not being spawned for the first time
-    VehicleInfo[vv][IsSpawned] = true;    // Mark vehicle as spawned
+    vInfo[vv][FirstSpawn] = false;  // Mark vehicle as not being spawned for the first time
+    vInfo[vv][IsSpawned] = true;    // Mark vehicle as spawned
 
     // Set the health of the vehicle
-    SetVehicleHealth(VehicleInfo[vv][vID], VehicleInfo[vv][vHealth]);
+    SetVehicleHealth(vInfo[vv][vID], vInfo[vv][vHealth]);
 
 	for(new m = 0; m < 12; m++)
 	{
-		if(GetVehicleMods[vv][m] > 0)
+		if(GetvMods[vv][m] > 0)
 		{
-			AddVehicleComponent(vv, GetVehicleMods[vv][m]);
+			AddVehicleComponent(vv, GetvMods[vv][m]);
 		}
 	}
 
@@ -271,22 +279,22 @@ stock CreateTheVehicle(vv)
     { 
         // Log vehicle creation details
         printf("CreateTheVehicle(VehicleID: %d, %d, %.0f, %.0f, %.0f, %.0f, %d, %d, %d, %d, %d)", 
-            VehicleInfo[vv][vID],         // Vehicle ID
-            VehicleInfo[vv][vModel],      // Vehicle model
-            VehicleInfo[vv][vLastX],      // Last X position
-            VehicleInfo[vv][vLastY],      // Last Y position
-            VehicleInfo[vv][vLastZ],      // Last Z position
-            VehicleInfo[vv][vLastA],      // Last angle/rotation
-            VehicleInfo[vv][vColor1],     // Primary color
-            VehicleInfo[vv][vColor2],     // Secondary color
-            VehicleInfo[vv][vRespawn],    // Respawn state
-            VehicleInfo[vv][vStream],     // Streaming state
+            vInfo[vv][vID],         // Vehicle ID
+            vInfo[vv][vModel],      // Vehicle model
+            vInfo[vv][vLastX],      // Last X position
+            vInfo[vv][vLastY],      // Last Y position
+            vInfo[vv][vLastZ],      // Last Z position
+            vInfo[vv][vLastA],      // Last angle/rotation
+            vInfo[vv][vColor1],     // Primary color
+            vInfo[vv][vColor2],     // Secondary color
+            vInfo[vv][vRespawn],    // Respawn state
+            vInfo[vv][vStream],     // Streaming state
             lastsvid                      // Last server-side ID (custom field)
         ); 
     }
 
     // Return the newly created vehicle's ID
-    return VehicleInfo[vv][vID];
+    return vInfo[vv][vID];
 }
 
 stock DestroyTheVehicle(vv)
@@ -299,38 +307,54 @@ stock DestroyTheVehicle(vv)
         // %d - Integer values (Vehicle ID, Model, Color1, Color2, Respawn, Stream, Lastsvid)
         // %.0f - Floating-point values rounded to 0 decimal places (LastX, LastY, LastZ, LastA)
         printf("DestroyVehicle(VehicleID: %d, %d, %.0f, %.0f, %.0f, %.0f, %d, %d, %d, %d, %d)", 
-            VehicleInfo[vv][vID],         // Vehicle ID
-            VehicleInfo[vv][vModel],      // Vehicle Model
-            VehicleInfo[vv][vLastX],      // Last X position of the vehicle
-            VehicleInfo[vv][vLastY],      // Last Y position of the vehicle
-            VehicleInfo[vv][vLastZ],      // Last Z position of the vehicle
-            VehicleInfo[vv][vLastA],      // Last A (angle/rotation) of the vehicle
-            VehicleInfo[vv][vColor1],     // Primary color of the vehicle
-            VehicleInfo[vv][vColor2],     // Secondary color of the vehicle
-            VehicleInfo[vv][vRespawn],    // Respawn state of the vehicle
-            VehicleInfo[vv][vStream],     // Streaming state of the vehicle
+            vInfo[vv][vID],         // Vehicle ID
+            vInfo[vv][vModel],      // Vehicle Model
+            vInfo[vv][vLastX],      // Last X position of the vehicle
+            vInfo[vv][vLastY],      // Last Y position of the vehicle
+            vInfo[vv][vLastZ],      // Last Z position of the vehicle
+            vInfo[vv][vLastA],      // Last A (angle/rotation) of the vehicle
+            vInfo[vv][vColor1],     // Primary color of the vehicle
+            vInfo[vv][vColor2],     // Secondary color of the vehicle
+            vInfo[vv][vRespawn],    // Respawn state of the vehicle
+            vInfo[vv][vStream],     // Streaming state of the vehicle
             lastsvid                      // Last server-side ID (custom field)
         ); 
     }
     
     // Destroy the vehicle with the given Vehicle ID
-    DestroyVehicle(VehicleInfo[vv][vID]);
+    DestroyVehicle(vInfo[vv][vID]);
     
     // Update vehicle information to reflect its destruction
-    VehicleInfo[vv][FirstSpawn] = false;  // Mark the vehicle as no longer first spawned
-    VehicleInfo[vv][IsSpawned] = false;   // Mark the vehicle as not spawned
-    VehicleInfo[vv][vID] = INVALID_VEHICLE_ID;  // Set the vehicle ID to invalid
-    VehicleInfo[vv][IsActive] = false;    // Mark the vehicle as inactive
+    vInfo[vv][FirstSpawn] = false;  // Mark the vehicle as no longer first spawned
+    vInfo[vv][IsSpawned] = false;   // Mark the vehicle as not spawned
+    vInfo[vv][vID] = INVALID_VEHICLE_ID;  // Set the vehicle ID to invalid
+    vInfo[vv][IsActive] = false;    // Mark the vehicle as inactive
 }
 
 
 stock RespawnTheVehicle(vv)
 {
-	VehicleInfo[vv][vLastX] = VehicleInfo[vv][vSpawnX];
-	VehicleInfo[vv][vLastY] = VehicleInfo[vv][vSpawnY];
-	VehicleInfo[vv][vLastZ] = VehicleInfo[vv][vSpawnZ];
-	VehicleInfo[vv][vLastA] = VehicleInfo[vv][vSpawnA];
+	vInfo[vv][vLastX] = vInfo[vv][vSpawnX];
+	vInfo[vv][vLastY] = vInfo[vv][vSpawnY];
+	vInfo[vv][vLastZ] = vInfo[vv][vSpawnZ];
+	vInfo[vv][vLastA] = vInfo[vv][vSpawnA];
 }
+
+/*
+stock RandomVehicleMods(vehicleid)
+{
+    // Define possible mods (example mod IDs, replace with actual mod IDs).
+    new possibleMods[] = {1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010, 1011};
+    new numPossibleMods = sizeof(possibleMods);
+
+    // Assign random mods to the vehicle.
+    for (new i = 0; i < MAX_ALLOWED_MODS; i++)
+    {
+        new randomMod = possibleMods[random(numPossibleMods)];
+        AddVehicleComponent(vehicleid, randomMod);
+    }
+}
+*/
 
 stock RandomColor(svid)
 {
@@ -340,94 +364,94 @@ stock RandomColor(svid)
 	{
 		case 0:
 		{
-			VehicleInfo[svid][vColor1] = 1;
+			vInfo[svid][vColor1] = 1;
 		}
 		case 1:
 		{
-			VehicleInfo[svid][vColor1] = 130;
+			vInfo[svid][vColor1] = 130;
 		}
 		case 2:
 		{
-			VehicleInfo[svid][vColor1] = 131;
+			vInfo[svid][vColor1] = 131;
 		}
 		case 3:
 		{
-			VehicleInfo[svid][vColor1] = 132;
+			vInfo[svid][vColor1] = 132;
 		}
 		case 4:
 		{
-			VehicleInfo[svid][vColor1] = 146;
+			vInfo[svid][vColor1] = 146;
 		}
 		case 5:
 		{
-			VehicleInfo[svid][vColor1] = 147;
+			vInfo[svid][vColor1] = 147;
 		}
 		case 6:
 		{
-			VehicleInfo[svid][vColor1] = 148;
+			vInfo[svid][vColor1] = 148;
 		}
 		case 7:
 		{
-			VehicleInfo[svid][vColor1] = 151;
+			vInfo[svid][vColor1] = 151;
 		}
 		case 8:
 		{
-			VehicleInfo[svid][vColor1] = 6;
+			vInfo[svid][vColor1] = 6;
 		}
 		case 9:
 		{
-			VehicleInfo[svid][vColor1] = 128;
+			vInfo[svid][vColor1] = 128;
 		}
 		case 10:
 		{
-			VehicleInfo[svid][vColor1] = 0;
+			vInfo[svid][vColor1] = 0;
 		}
 	}
 	switch (randnum2)
 	{
 		case 0:
 		{
-			VehicleInfo[svid][vColor2] = 1;
+			vInfo[svid][vColor2] = 1;
 		}
 		case 1:
 		{
-			VehicleInfo[svid][vColor2] = 130;
+			vInfo[svid][vColor2] = 130;
 		}
 		case 2:
 		{
-			VehicleInfo[svid][vColor2] = 131;
+			vInfo[svid][vColor2] = 131;
 		}
 		case 3:
 		{
-			VehicleInfo[svid][vColor2] = 132;
+			vInfo[svid][vColor2] = 132;
 		}
 		case 4:
 		{
-			VehicleInfo[svid][vColor2] = 146;
+			vInfo[svid][vColor2] = 146;
 		}
 		case 5:
 		{
-			VehicleInfo[svid][vColor2] = 147;
+			vInfo[svid][vColor2] = 147;
 		}
 		case 6:
 		{
-			VehicleInfo[svid][vColor2] = 148;
+			vInfo[svid][vColor2] = 148;
 		}
 		case 7:
 		{
-			VehicleInfo[svid][vColor2] = 151;
+			vInfo[svid][vColor2] = 151;
 		}
 		case 8:
 		{
-			VehicleInfo[svid][vColor2] = 6;
+			vInfo[svid][vColor2] = 6;
 		}
 		case 9:
 		{
-			VehicleInfo[svid][vColor2] = 128;
+			vInfo[svid][vColor2] = 128;
 		}
 		case 10:
 		{
-			VehicleInfo[svid][vColor2] = 0;
+			vInfo[svid][vColor2] = 0;
 		}
 	}
 }
@@ -437,8 +461,8 @@ stock RandomPlate(svid)
 	new randnumb = 1 + random(9);
 	new strrr[32];
     format(strrr, sizeof(strrr), "OPEN MP %d", randnumb);
-	VehicleInfo[svid][vPlate] = strrr;
-    SetVehicleNumberPlate(svid, VehicleInfo[svid][vPlate]);
+	vInfo[svid][vPlate] = strrr;
+    SetVehicleNumberPlate(svid, vInfo[svid][vPlate]);
 //	SetVehicleToRespawn(svid);
 }
 
@@ -539,20 +563,23 @@ stock token_by_delim(const string[], return_str[], delim, start_index)
 
 public OnFilterScriptInit()
 {    
+	// Initialize the iterator.
+    //Iter_Init(VehicleIter);
+	//foreach (new vehicleid : VehicleIter)
 	Loop(svidd, MAX_STREAM_VEHICLES)
 	{	
-		VehicleInfo[svidd][vModel] = 400;
-		VehicleInfo[svidd][vColor1] = 0;
-		VehicleInfo[svidd][vColor2] = 0;
-		VehicleInfo[svidd][vSpawnX] = 0.0;
-		VehicleInfo[svidd][vSpawnY] = 0.0;
-		VehicleInfo[svidd][vSpawnZ] = 0.0;
-		VehicleInfo[svidd][vSpawnA] = 0.0;
-		VehicleInfo[svidd][FirstSpawn] = false;
-		VehicleInfo[svidd][IsSpawned] = false;
-		VehicleInfo[svidd][IsActive] = false;
-		VehicleInfo[svidd][vHealth] = 0;
-		VehicleInfo[svidd][vID] = INVALID_VEHICLE_ID;
+		vInfo[svidd][vModel] = 400;
+		vInfo[svidd][vColor1] = 0;
+		vInfo[svidd][vColor2] = 0;
+		vInfo[svidd][vSpawnX] = 0.0;
+		vInfo[svidd][vSpawnY] = 0.0;
+		vInfo[svidd][vSpawnZ] = 0.0;
+		vInfo[svidd][vSpawnA] = 0.0;
+		vInfo[svidd][FirstSpawn] = false;
+		vInfo[svidd][IsSpawned] = false;
+		vInfo[svidd][IsActive] = false;
+		vInfo[svidd][vHealth] = 0;
+		vInfo[svidd][vID] = INVALID_VEHICLE_ID;
 	}
 //	gl_common vehicles (grand larceny)
 	// SPECIAL
@@ -611,10 +638,11 @@ public OnFilterScriptExit()
     }
 
     // Loop through all vehicles in the VehicleInfo array.
+	//foreach (new vehicleid : VehicleIter)
     Loop(i, MAX_STREAM_VEHICLES)
     {
         // Check if the vehicle is marked as spawned in the VehicleInfo array.
-        if (VehicleInfo[i][IsSpawned] == true)
+        if (vInfo[i][IsSpawned] == true)
         {
             DestroyTheVehicle(i); // Destroy the vehicle to free resources.
         }
@@ -632,9 +660,9 @@ public OnVehicleMod(playerid, vehicleid, componentid)
 		new modcount = 0;
 		for(new m = 0; m < MAX_ALLOWED_MODS; m++)
 		{
-	    	if(GetVehicleMods[vehicleid][m] == 0)
+	    	if(GetvMods[vehicleid][m] == 0)
 	    	{
-	        	GetVehicleMods[vehicleid][m] = componentid;
+	        	GetvMods[vehicleid][m] = componentid;
 //	        	SaveVehicleStats(vehicleid);
 				modcount++;
 	        	break;
@@ -644,7 +672,7 @@ public OnVehicleMod(playerid, vehicleid, componentid)
 		{
 	    	for(new m = 0; m < 12; m++)
 			{
-				GetVehicleMods[vehicleid][m] = 0;
+				GetvMods[vehicleid][m] = 0;
 			}
 //			SaveVehicleStats(vehicleid);
 		}
@@ -665,16 +693,16 @@ public OnVehicleDestroy(vehicleid)
     for (new vv = 0; vv < MAX_STREAM_VEHICLES; vv++)
     {
         // Check if the vehicle ID matches the destroyed vehicle
-        if (VehicleInfo[vv][vID] == vehicleid)
+        if (vInfo[vv][vID] == vehicleid)
         {
             if (VSD == true)
             {
                 printf("[DEBUG] OnVehicleDestroy: VehicleID: %d, StreamID: %d", vehicleid, vv);
             }
             // Mark the vehicle as no longer spawned and update its status
-            VehicleInfo[vv][IsSpawned] = false;
-            VehicleInfo[vv][IsActive] = false;
-            VehicleInfo[vv][vID] = INVALID_VEHICLE_ID;
+            vInfo[vv][IsSpawned] = false;
+            vInfo[vv][IsActive] = false;
+            vInfo[vv][vID] = INVALID_VEHICLE_ID;
             return 1; // Exit after handling the matching vehicle
         }
     }
@@ -698,14 +726,185 @@ public OnVehicleDeath(vehicleid, killerid)
     // Handle the vehicle's destruction in the streamer
     for (new vv = 0; vv < MAX_STREAM_VEHICLES; vv++)
     {
-        if (VehicleInfo[vv][vID] == vehicleid)
+        if (vInfo[vv][vID] == vehicleid)
         {
-            VehicleInfo[vv][IsSpawned] = false;
-            VehicleInfo[vv][IsActive] = false;
-            VehicleInfo[vv][vID] = INVALID_VEHICLE_ID;
+            vInfo[vv][IsSpawned] = false;
+            vInfo[vv][IsActive] = false;
+            vInfo[vv][vID] = INVALID_VEHICLE_ID;
             break; // Exit loop once the matching vehicle is found
         }
     }
     return 1; // Indicate successful handling
 }
+*/
+/*
+public OnPlayerStateChange(playerid, PLAYER_STATE:newstate, PLAYER_STATE:oldstate)
+{
+    if (newstate == PLAYER_STATE_DRIVER) // Player entered a vehicle as a driver
+    {
+		// Loop through all vehicles in the VehicleInfo array.
+		//foreach (new vehicleid : VehicleIter)
+    	Loop(vv, MAX_STREAM_VEHICLES)
+    	{
+     		// Check if the vehicle is marked as spawned in the VehicleInfo array.
+        	if (vInfo[vv][IsSpawned] == true)
+        	{
+            	new vehicleid = GetPlayerVehicleID(playerid);
+				if(vehicleid == vInfo[vv][vID])
+				{
+					new pcount = 0;
+					for(new m = 0; m < 9; m++)
+					{
+	    				if(vInfo[vv][vPlayerID[m]] == INVALID_PLAYER_ID)
+	    				{		
+	        				vInfo[vv][vPlayerID[m]] = playerid;
+							//SaveVehicleStats(vehicleid);
+							pcount++;
+	        				break;
+						}
+					}
+					if(pcount == 0)
+					{
+	    				for(new m = 0; m < 9; m++)
+						{
+							vInfo[vv][vPlayerID[m]] = INVALID_PLAYER_ID;
+						}
+						//SaveVehicleStats(vehicleid);
+					}
+					//AddVehicleComponent(vehicleid, 1010); // Add NOS to the vehicle
+				}
+        	}
+    	}
+
+        
+    }
+    return 1;
+}
+*/
+/*
+public OnPlayerUpdate(playerid)
+{
+	if (IsPlayerInAnyVehicle(playerid))
+	{
+		// Loop through all vehicles in the VehicleInfo array.
+		//foreach (new vehicleid : VehicleIter)
+    	Loop(vv, MAX_STREAM_VEHICLES)
+    	{
+     		// Check if the vehicle is marked as spawned in the VehicleInfo array.
+        	if (vInfo[vv][IsSpawned] == true)
+        	{
+            	new vehicleid = GetPlayerVehicleID(playerid);
+				if(vehicleid == vInfo[vv][vID])
+				{
+					vInfo[vv][IsActive] = true;
+				}
+			}
+		}
+	}
+	return 1;
+}
+*/
+/*
+public OnPlayerEnterVehicle(playerid, vehicleid, ispassenger)
+{
+    new string[128];
+    format(string, sizeof(string), "You are entering vehicle %i", vehicleid);
+    SendClientMessage(playerid, 0xFFFFFFFF, string);
+    return 1;
+}
+*/
+/*
+public OnVehicleDamageStatusUpdate(vehicleid, playerid)
+{
+    // Get the damage status of all the components
+    new 
+        VEHICLE_PANEL_STATUS:panels,
+        VEHICLE_DOOR_STATUS:doors,
+        VEHICLE_LIGHT_STATUS:lights,
+        VEHICLE_TYRE_STATUS:tyres;
+
+    GetVehicleDamageStatus(vehicleid, panels, doors, lights, tyres);
+
+    // Set the tyres to 0, which means none are popped
+    tyres = VEHICLE_TYRE_STATUS_NONE;
+
+    // Update the vehicle's damage status with unpopped tyres
+    UpdateVehicleDamageStatus(vehicleid, panels, doors, lights, tyres);
+    return 1;
+}
+*/
+/*
+public OnVehicleDeath(vehicleid, killerid)
+{
+    new string[64];
+    format(string, sizeof(string), "Vehicle %i was destroyed. Reported by player %i.", vehicleid, killerid);
+    SendClientMessageToAll(0xFFFFFFFF, string);
+    return 1;
+}
+*/
+/*
+public OnVehiclePaintjob(playerid, vehicleid, paintjobid)
+{
+    new string[128];
+    format(string, sizeof(string), "You have changed your vehicle's paintjob to %d!", paintjobid);
+    SendClientMessage(playerid, 0x33AA33AA, string);
+    return 1;
+}
+*/
+/*
+public OnVehicleRespray(playerid, vehicleid, color1, color2)
+{
+    new string[48];
+    format(string, sizeof(string), "You resprayed vehicle %d to colors %d and %d!", vehicleid, color1, color2);
+    SendClientMessage(playerid, COLOR_GREEN, string);
+    return 1;
+}
+*/
+/*
+public OnVehicleSirenStateChange(playerid, vehicleid, newstate)
+{
+    if (newstate)
+    {
+        GameTextForPlayer(playerid, "~W~Siren ~G~on", 1000, 3);
+    }
+    else
+    {
+        GameTextForPlayer(playerid, "~W~Siren ~r~off", 1000, 3);
+    }
+    return 1;
+}
+*/
+/*
+public OnVehicleSpawn(vehicleid)
+{
+    printf("Vehicle %i spawned!",vehicleid);
+    return 1;
+}
+*/
+/*
+public OnVehicleStreamIn(vehicleid, forplayerid)
+{
+    new string[32];
+    format(string, sizeof(string), "You can now see vehicle %d.", vehicleid);
+    SendClientMessage(forplayerid, 0xFFFFFFFF, string);
+    return 1;
+}
+*/
+/*
+public OnVehicleStreamOut(vehicleid, forplayerid)
+{
+    new string[48];
+    format(string, sizeof(string), "Your client is no longer streaming vehicle %d", vehicleid);
+    SendClientMessage(forplayerid, 0xFFFFFFFF, string);
+    return 1;
+}
+*/
+/*
+
+*/
+/*
+
+*/
+/*
+
 */
