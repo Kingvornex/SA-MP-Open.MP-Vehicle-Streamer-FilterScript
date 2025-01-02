@@ -2,6 +2,7 @@
 // Stream Vehicles from file
 
 #include <open.mp>
+#include <crashdetect>
 #include <YSI-Includes\YSI_Data\y_iterate>
 
 // Define constants for configuration.
