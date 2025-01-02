@@ -65,6 +65,8 @@ new total_vehicles_from_files = 0; // Total vehicles loaded from file.
 
 new Seekingid; // ID for the seeker timer.
 
+//new ActiveVehicles[MAX_PLAYERS][MAX_STREAM_VEHICLES];
+
 // Forward declaration for the VehicleSeeker function.
 forward VehicleSeeker();
 
@@ -905,7 +907,67 @@ public OnVehicleStreamOut(vehicleid, forplayerid)
 }
 */
 /*
+public OnPlayerConnect(playerid)
+{
+    new Float:x, Float:y, Float:z;
+    GetPlayerPos(playerid, x, y, z);
+    for (new i = 0; i < MAX_VEHICLES; i++)
+    {
+        if (IsInRangeOfPoint(x, y, z, VehicleData[i][1], VehicleData[i][2], VehicleData[i][3]))
+        {
+            ActiveVehicles[playerid][i] = CreateVehicle(VehicleData[i][0], VehicleData[i][1], VehicleData[i][2], VehicleData[i][3], 
+                                                        VehicleData[i][4], VehicleData[i][5], VehicleData[i][6], 100);
+            SetVehicleHealth(ActiveVehicles[playerid][i], VehicleData[i][8]);
+            ChangeVehiclePaintjob(ActiveVehicles[playerid][i], VehicleData[i][7]);
+            AddRandomMods(ActiveVehicles[playerid][i]);
+        }
+    }
+    return 1;
+}
 
+public OnPlayerDisconnect(playerid, reason)
+{
+    for (new i = 0; i < MAX_VEHICLES; i++)
+    {
+        if (ActiveVehicles[playerid][i] != INVALID_VEHICLE_ID)
+        {
+            DestroyVehicle(ActiveVehicles[playerid][i]);
+            ActiveVehicles[playerid][i] = INVALID_VEHICLE_ID;
+        }
+    }
+    return 1;
+}
+
+public OnPlayerUpdate(playerid)
+{
+    new Float:x, Float:y, Float:z;
+    GetPlayerPos(playerid, x, y, z);
+    for (new i = 0; i < MAX_VEHICLES; i++)
+    {
+        if (IsInRangeOfPoint(x, y, z, VehicleData[i][1], VehicleData[i][2], VehicleData[i][3]))
+        {
+            if (ActiveVehicles[playerid][i] == INVALID_VEHICLE_ID)
+            {
+                ActiveVehicles[playerid][i] = CreateVehicle(VehicleData[i][0], VehicleData[i][1], VehicleData[i][2], VehicleData[i][3], 
+                                                            VehicleData[i][4], VehicleData[i][5], VehicleData[i][6], 100);
+                SetVehicleHealth(ActiveVehicles[playerid][i], VehicleData[i][8]);
+                ChangeVehiclePaintjob(ActiveVehicles[playerid][i], VehicleData[i][7]);
+                AddRandomMods(ActiveVehicles[playerid][i]);
+            }
+        }
+        else
+        {
+            new vehid = ActiveVehicles[playerid][i];
+            GetVehiclePos(vehid, VehicleData[i][1], VehicleData[i][2], VehicleData[i][3]);
+            GetVehicleZAngle(vehid, VehicleData[i][4]);
+            GetVehicleColor(vehid, VehicleData[i][5], VehicleData[i][6]);
+            GetVehicleHealth(vehid, VehicleData[i][8]);
+            DestroyVehicle(vehid);
+            ActiveVehicles[playerid][i] = INVALID_VEHICLE_ID;
+        }
+    }
+    return 1;
+}
 */
 /*
 
