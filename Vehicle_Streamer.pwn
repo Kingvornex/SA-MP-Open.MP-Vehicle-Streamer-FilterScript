@@ -614,6 +614,10 @@ public OnFilterScriptInit()
 
 	// CUSTOM
     total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/custom.txt");
+
+	// TEST
+    total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/lv_heavytraffic.txt");
+
     
 //    total_vehicles_from_files += LoadStaticVehiclesFromFile("vehicles/trains_platform.txt");
 
