@@ -1,7 +1,3 @@
-# 2 ways to make code lighter
-1. load vehilces in one area based on player location area (zone):
-* there is already zone detector code, for example if player is in bone county load vehicles from bone.txt file then if he leaves zone unload them
-2. check each vehicle zone area name and save it and create vehicles if the vehicle zone area name and player zone area name is the same.
 
 # SA-MP-Open.MP-Vehicle-Streamer-FilterScript
 The SA-MP/Open.MP Vehicle Streamer is a dynamic filter script for Grand Theft Auto: San Andreas Multiplayer (SA-MP) and Open.MP. It efficiently manages vehicle streaming, allowing seamless creation, removal, and visibility of vehicles across servers. Ideal for optimizing server performance and enhancing the multiplayer experience.
@@ -208,6 +204,8 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 - **SA-MP** and **Open.MP** developers for creating the platforms.
 - **GitHub** for hosting this repository.
-```
 
-This is the markdown version for the **README.md** that you can use directly for your project. Let me know if you need further adjustments!
+# 2 ways to make code lighter
+1. load vehilces in one area based on player location area (zone):
+* there is already zone detector code, for example if player is in bone county load vehicles from bone.txt file then if he leaves zone unload them
+2. check each vehicle zone area name and save it and create vehicles if the vehicle zone area name and player zone area name is the same.
