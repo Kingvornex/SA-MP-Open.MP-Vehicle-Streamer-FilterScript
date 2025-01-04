@@ -970,7 +970,258 @@ public OnPlayerUpdate(playerid)
 }
 */
 /*
+#include <open.mp>
+#include <izcmd>
 
+//enum E_AIRPLANE_NAMES { AIRPLANE_NAME[24] }; 
+enum E_AIRPLANE_IDS { AIRPLANE_ID }; 
+//new const AirplaneNames[][E_AIRPLANE_NAMES] = { {"Andromada"}, {"AT-400"}, {"Beagle"}, {"Cropduster"}, {"Dodo"}, {"Hydra"}, {"Nevada"}, {"Rustler"}, {"Shamal"}, {"Skimmer"}, {"Stuntplane"} }; 
+new const AirplaneIDs[][E_AIRPLANE_IDS] = { {592}, {577}, {511}, {512}, {593}, {520}, {553}, {476}, {519}, {460}, {513} };
+
+//enum E_HELICOPTER_NAMES { HELICOPTER_NAME[24] }; 
+enum E_HELICOPTER_IDS { HELICOPTER_ID }; 
+//new const HelicopterNames[][E_HELICOPTER_NAMES] = { {"Cargobob"}, {"Hunter"}, {"Leviathan"}, {"Maverick"}, {"News Chopper"}, {"Police Maverick"}, {"Raindance"}, {"Seasparrow"}, {"Sparrow"} }; 
+new const HelicopterIDs[][E_HELICOPTER_IDS] = { {548}, {425}, {417}, {487}, {488}, {497}, {563}, {447}, {469} };
+
+//enum E_BOAT_NAMES { BOAT_NAME[24] }; 
+enum E_BOAT_IDS { BOAT_ID }; 
+//new const BoatNames[][E_BOAT_NAMES] = { {"Coastguard"}, {"Dinghy"}, {"Jetmax"}, {"Launch"}, {"Marquis"}, {"Predator"}, {"Reefer"}, {"Speeder"}, {"Squalo"}, {"Tropic"} }; 
+new const BoatIDs[][E_BOAT_IDS] = { {472}, {473}, {493}, {595}, {484}, {430}, {453}, {452}, {446}, {454} };
+
+//enum E_BIKE_NAMES { BIKE_NAME[24] }; 
+enum E_BIKE_IDS { BIKE_ID }; 
+//new const BikeNames[][E_BIKE_NAMES] = { {"BF-400"}, {"Bike"}, {"BMX"}, {"Faggio"}, {"FCR-900"}, {"Freeway"}, {"Mountain Bike"}, {"NRG-500"}, {"PCJ-600"}, {"Pizzaboy"}, {"Sanchez"}, {"Wayfarer"} }; 
+new const BikeIDs[][E_BIKE_IDS] = { {581}, {509}, {481}, {462}, {521}, {463}, {510}, {522}, {461}, {448}, {468}, {586} };
+
+//enum E_2DOOR_COMPACT_NAMES { CAR_NAME[24] }; 
+enum E_2DOOR_COMPACT_IDS { CAR_ID }; 
+//new const CompactCarNames[][E_2DOOR_COMPACT_NAMES] = { {"Alpha"}, {"Blista Compact"}, {"Bravura"}, {"Buccaneer"}, {"Cadrona"}, {"Club"}, {"Esperanto"}, {"Euros"}, {"Feltzer"}, {"Fortune"}, {"Hermes"}, {"Hustler"}, {"Majestic"}, {"Manana"}, {"Picador"}, {"Previon"}, {"Stallion"}, {"Tampa"}, {"Virgo"} }; 
+new const CompactCarIDs[][E_2DOOR_COMPACT_IDS] = { {602}, {496}, {401}, {518}, {527}, {589}, {419}, {587}, {533}, {526}, {474}, {545}, {517}, {410}, {600}, {436}, {439}, {549}, {491} };
+
+//enum E_4DOOR_LUXURY_NAMES { CAR_NAME[24] }; 
+enum E_4DOOR_LUXURY_IDS { CAR_ID }; 
+//new const LuxuryCarNames[][E_4DOOR_LUXURY_NAMES] = { {"Admiral"}, {"Damaged Glendale"}, {"Elegant"}, {"Emperor"}, {"Glendale"}, {"Greenwood"}, {"Intruder"}, {"Merit"}, {"Nebula"}, {"Oceanic"}, {"Premier"}, {"Primo"}, {"Sentinel"}, {"Stafford"}, {"Stretch"}, {"Sunrise"}, {"Tahoma"}, {"Vincent"}, {"Washington"}, {"Willard"} }; 
+new const LuxuryCarIDs[][E_4DOOR_LUXURY_IDS] = { {445}, {604}, {507}, {585}, {466}, {492}, {546}, {551}, {516}, {467}, {426}, {547}, {405}, {580}, {409}, {550}, {566}, {540}, {421}, {529} };
+
+//enum E_CIVIL_SERVICE_NAMES { VEHICLE_NAME[24] }; 
+enum E_CIVIL_SERVICE_IDS { VEHICLE_ID }; 
+//new const CivilServiceNames[][E_CIVIL_SERVICE_NAMES] = { {"Baggage"}, {"Bus"}, {"Cabbie"}, {"Coach"}, {"Sweeper"}, {"Taxi"}, {"Towtruck"}, {"Trashmaster"}, {"Utility Van"} }; 
+new const CivilServiceIDs[][E_CIVIL_SERVICE_IDS] = { {485}, {431}, {438}, {437}, {574}, {420}, {525}, {408}, {552} };
+
+//enum E_GOV_VEHICLE_NAMES { VEHICLE_NAME[24] }; 
+enum E_GOV_VEHICLE_IDS { VEHICLE_ID }; 
+//new const GovVehicleNames[][E_GOV_VEHICLE_NAMES] = { {"Ambulance"}, {"Barracks"}, {"Enforcer"}, {"FBI Rancher"}, {"FBI Truck"}, {"Fire Truck"}, {"Fire Truck"}, {"HPV1000"}, {"Patriot"}, {"Police LS"}, {"Police LV"}, {"Police Ranger"}, {"Police SF"}, {"Rhino"}, {"S.W.A.T."}, {"Securicar"} }; 
+new const GovVehicleIDs[][E_GOV_VEHICLE_IDS] = { {416}, {433}, {427}, {490}, {528}, {407}, {544}, {523}, {470}, {596}, {598}, {599}, {597}, {432}, {601}, {428} };
+
+//enum E_HEAVY_UTILITY_NAMES { VEHICLE_NAME[24] }; 
+enum E_HEAVY_UTILITY_IDS { VEHICLE_ID }; 
+//new const HeavyUtilityNames[][E_HEAVY_UTILITY_NAMES] = { {"Benson"}, {"Boxville Mission"}, {"Boxville"}, {"Cement Truck"}, {"Combine Harvester"}, {"DFT-30"}, {"Dozer"}, {"Dumper"}, {"Dune"}, {"Flatbed"}, {"Hotdog"}, {"Linerunner"}, {"Mr. Whoopee"}, {"Mule"}, {"Packer"}, {"Roadtrain"}, {"Tanker"}, {"Tractor"}, {"Yankee"} }; 
+new const HeavyUtilityIDs[][E_HEAVY_UTILITY_IDS] = { {499}, {609}, {498}, {524}, {532}, {578}, {486}, {406}, {573}, {455}, {588}, {403}, {423}, {414}, {443}, {515}, {514}, {531}, {456} };
+
+//enum E_LIGHT_TRUCKS_VANS_NAMES { VEHICLE_NAME[24] }; 
+enum E_LIGHT_TRUCKS_VANS_IDS { VEHICLE_ID }; 
+//new const LightTruckVanNames[][E_LIGHT_TRUCKS_VANS_NAMES] = { {"Berkley's RC Van"}, {"Bobcat"}, {"Burrito"}, {"Damaged Sadler"}, {"Forklift"}, {"Moonbeam"}, {"Mower"}, {"News Van"}, {"Pony"}, {"Rumpo"}, {"Sadler"}, {"Tug"}, {"Walton"}, {"Yosemite"} }; 
+new const LightTruckVanIDs[][E_LIGHT_TRUCKS_VANS_IDS] = { {459}, {422}, {482}, {605}, {530}, {418}, {572}, {582}, {413}, {440}, {543}, {583}, {478}, {554} };
+
+//enum E_SUVS_WAGONS_NAMES { VEHICLE_NAME[24] }; 
+enum E_SUVS_WAGONS_IDS { VEHICLE_ID }; 
+//new const SUVWagonNames[][E_SUVS_WAGONS_NAMES] = { {"Huntley"}, {"Landstalker"}, {"Perennial"}, {"Rancher"}, {"Rancher Lure"}, {"Regina"}, {"Romero"}, {"Solair"} }; 
+new const SUVWagonIDs[][E_SUVS_WAGONS_IDS] = { {579}, {400}, {404}, {489}, {505}, {479}, {442}, {458} };
+
+//enum E_LOWRIDER_NAMES { VEHICLE_NAME[24] }; 
+enum E_LOWRIDER_IDS { VEHICLE_ID }; 
+//new const LowriderNames[][E_LOWRIDER_NAMES] = { {"Blade"}, {"Broadway"}, {"Remington"}, {"Savanna"}, {"Slamvan"}, {"Tornado"}, {"Voodoo"} }; 
+new const LowriderIDs[][E_LOWRIDER_IDS] = { {536}, {575}, {534}, {567}, {535}, {576}, {412} };
+
+//enum E_MUSCLE_CAR_NAMES { VEHICLE_NAME[24] }; 
+enum E_MUSCLE_CAR_IDS { VEHICLE_ID }; 
+//new const MuscleCarNames[][E_MUSCLE_CAR_NAMES] = { {"Buffalo"}, {"Clover"}, {"Phoenix"}, {"Sabre"} }; 
+new const MuscleCarIDs[][E_MUSCLE_CAR_IDS] = { {402}, {542}, {603}, {475} };
+
+//enum E_STREET_RACER_NAMES { VEHICLE_NAME[24] }; 
+enum E_STREET_RACER_IDS { VEHICLE_ID }; 
+//new const StreetRacerNames[][E_STREET_RACER_NAMES] = { {"Banshee"}, {"Bullet"}, {"Cheetah"}, {"Comet"}, {"Elegy"}, {"Flash"}, {"Hotknife"}, {"Hotring Racer"}, {"Hotring Racer 2"}, {"Hotring Racer 3"}, {"Infernus"}, {"Jester"}, {"Stratum"}, {"Sultan"}, {"Super GT"}, {"Turismo"}, {"Uranus"}, {"Windsor"}, {"ZR-350"} }; 
+new const StreetRacerIDs[][E_STREET_RACER_IDS] = { {429}, {541}, {415}, {480}, {562}, {565}, {434}, {494}, {502}, {503}, {411}, {559}, {561}, {560}, {506}, {451}, {558}, {555}, {477} };
+
+//enum E_RC_VEHICLE_NAMES { VEHICLE_NAME[24] }; 
+enum E_RC_VEHICLE_IDS { VEHICLE_ID }; 
+//new const RCVehicleNames[][E_RC_VEHICLE_NAMES] = { {"RC Bandit"}, {"RC Baron"}, {"RC Cam"}, {"RC Goblin"}, {"RC Raider"}, {"RC Tiger"} }; 
+new const RCVehicleIDs[][E_RC_VEHICLE_IDS] = { {441}, {464}, {594}, {501}, {465}, {564} };
+
+//enum E_TRAILER_NAMES { VEHICLE_NAME[24] }; 
+enum E_TRAILER_IDS { VEHICLE_ID }; 
+//new const TrailerNames[][E_TRAILER_NAMES] = { {"Baggage Trailer"}, {"Baggage Trailer"}, {"Farm Trailer"}, {"Petrol Trailer"}, {"Trailer"}, {"Trailer"}, {"Trailer 1"}, {"Trailer 2"}, {"Trailer 3"} }; 
+new const TrailerIDs[][E_TRAILER_IDS] = { {606}, {607}, {610}, {584}, {611}, {608}, {435}, {450}, {591} };
+
+//enum E_TRAIN_NAMES { VEHICLE_NAME[24] }; 
+enum E_TRAIN_IDS { VEHICLE_ID }; 
+//new const TrainNames[][E_TRAIN_NAMES] = { {"Box Freight"}, {"Brown Streak"}, {"Brown Streak Carriage"}, {"Flat Freight"}, {"Freight"}, {"Tram"} }; 
+new const TrainIDs[][E_TRAIN_IDS] = { {590}, {538}, {570}, {569}, {537}, {449} };
+
+//enum E_RECREATIONAL_NAMES { VEHICLE_NAME[24] }; 
+enum E_RECREATIONAL_IDS { VEHICLE_ID }; 
+//new const RecreationalNames[][E_RECREATIONAL_NAMES] = { {"Bandito"}, {"BF Injection"}, {"Bloodring Banger"}, {"Caddy"}, {"Camper"}, {"Journey"}, {"Kart"}, {"Mesa"}, {"Monster"}, {"Monster 2"}, {"Monster 3"}, {"Quadbike"}, {"Sandking"}, {"Vortex"} }; 
+new const RecreationalIDs[][E_RECREATIONAL_IDS] = { {568}, {424}, {504}, {457}, {483}, {508}, {571}, {500}, {444}, {556}, {557}, {471}, {495}, {539} };
+
+public OnFilterScriptInit()
+{
+    print("FilterScript initialized.");
+    print("This FilterScript allows players to spawn random vehicles from various categories.");
+    print("Use the /randomvehicle or /rv command to create a random vehicle.");
+    return 1;
+}
+
+// Function to create a random vehicle from a given category
+stock CreateRandomVehicle(playerid, category)
+{
+    new vehicleID;
+    new Float:x, Float:y, Float:z;
+
+    switch (category)
+    {
+        case 1: // Airplanes
+        {
+            vehicleID = AirplaneIDs[random(sizeof(AirplaneIDs))][AIRPLANE_ID];
+            GetPlayerPos(playerid, x, y, z);
+            CreateVehicle(vehicleID, x + random(10), y + random(10), z + 3, random(360), -1, -1, 100);
+            
+        }
+        case 2: // Helicopters
+        {
+            vehicleID = HelicopterIDs[random(sizeof(HelicopterIDs))][HELICOPTER_ID];
+            GetPlayerPos(playerid, x, y, z);
+            CreateVehicle(vehicleID, x + random(10), y + random(10), z + 3, random(360), -1, -1, 100);
+            
+        }
+        case 3: // Boats
+        {
+            vehicleID = BoatIDs[random(sizeof(BoatIDs))][BOAT_ID];
+            GetPlayerPos(playerid, x, y, z);
+            CreateVehicle(vehicleID, x + random(10), y + random(10), z, random(360), -1, -1, 100);
+            
+        }
+        case 4: // Bikes
+        {
+            vehicleID = BikeIDs[random(sizeof(BikeIDs))][BIKE_ID];
+            GetPlayerPos(playerid, x, y, z);
+            CreateVehicle(vehicleID, x + random(10), y + random(10), z, random(360), -1, -1, 100);
+            
+        }
+        case 5: // 2-Door & Compact cars
+        {
+            vehicleID = CompactCarIDs[random(sizeof(CompactCarIDs))][CAR_ID];
+            GetPlayerPos(playerid, x, y, z);
+            CreateVehicle(vehicleID, x + random(10), y + random(10), z, random(360), -1, -1, 100);
+            
+        }
+        case 6: // 4-Door & Luxury cars
+        {
+            vehicleID = LuxuryCarIDs[random(sizeof(LuxuryCarIDs))][CAR_ID];
+            GetPlayerPos(playerid, x, y, z);
+            CreateVehicle(vehicleID, x + random(10), y + random(10), z, random(360), -1, -1, 100);
+            
+        }
+        case 7: // Civil service vehicles
+        {
+            vehicleID = CivilServiceIDs[random(sizeof(CivilServiceIDs))][VEHICLE_ID];
+            GetPlayerPos(playerid, x, y, z);
+            CreateVehicle(vehicleID, x + random(10), y + random(10), z, random(360), -1, -1, 100);
+            
+        }
+        case 8: // Government vehicles
+        {
+            vehicleID = GovVehicleIDs[random(sizeof(GovVehicleIDs))][VEHICLE_ID];
+            GetPlayerPos(playerid, x, y, z);
+            CreateVehicle(vehicleID, x + random(10), y + random(10), z, random(360), -1, -1, 100);
+            
+        }
+        case 9: // Heavy & Utility trucks
+        {
+            vehicleID = HeavyUtilityIDs[random(sizeof(HeavyUtilityIDs))][VEHICLE_ID];
+            GetPlayerPos(playerid, x, y, z);
+            CreateVehicle(vehicleID, x + random(10), y + random(10), z, random(360), -1, -1, 100);
+            
+        }
+        case 10: // Light trucks & Vans
+        {
+            vehicleID = LightTruckVanIDs[random(sizeof(LightTruckVanIDs))][VEHICLE_ID];
+            GetPlayerPos(playerid, x, y, z);
+            CreateVehicle(vehicleID, x + random(10), y + random(10), z, random(360), -1, -1, 100);
+            
+        }
+        case 11: // SUVs & Wagons
+        {
+            vehicleID = SUVWagonIDs[random(sizeof(SUVWagonIDs))][VEHICLE_ID];
+            GetPlayerPos(playerid, x, y, z);
+            CreateVehicle(vehicleID, x + random(10), y + random(10), z, random(360), -1, -1, 100);
+            
+        }
+        case 12: // Lowriders
+        {
+            vehicleID = LowriderIDs[random(sizeof(LowriderIDs))][VEHICLE_ID];
+            GetPlayerPos(playerid, x, y, z);
+            CreateVehicle(vehicleID, x + random(10), y + random(10), z, random(360), -1, -1, 100);
+            
+        }
+        case 13: // Muscle cars
+        {
+            vehicleID = MuscleCarIDs[random(sizeof(MuscleCarIDs))][VEHICLE_ID];
+            GetPlayerPos(playerid, x, y, z);
+            CreateVehicle(vehicleID, x + random(10), y + random(10), z, random(360), -1, -1, 100);
+            
+        }
+        case 14: // Street racers
+        {
+            vehicleID = StreetRacerIDs[random(sizeof(StreetRacerIDs))][VEHICLE_ID];
+            GetPlayerPos(playerid, x, y, z);
+            CreateVehicle(vehicleID, x + random(10), y + random(10), z, random(360), -1, -1, 100);
+            
+        }
+        case 15: // RC Vehicles
+        {
+            vehicleID = RCVehicleIDs[random(sizeof(RCVehicleIDs))][VEHICLE_ID];
+            GetPlayerPos(playerid, x, y, z);
+            CreateVehicle(vehicleID, x + random(10), y + random(10), z, random(360), -1, -1, 100);
+            
+        }
+        case 16: // Trailers
+        {
+            vehicleID = TrailerIDs[random(sizeof(TrailerIDs))][VEHICLE_ID];
+            GetPlayerPos(playerid, x, y, z);
+            CreateVehicle(vehicleID, x + random(10), y + random(10), z, random(360), -1, -1, 100);
+            
+        }
+        case 17: // Trains & Railroad cars
+        {
+            vehicleID = TrainIDs[random(sizeof(TrainIDs))][VEHICLE_ID];
+            GetPlayerPos(playerid, x, y, z);
+            CreateVehicle(vehicleID, x + random(10), y + random(10), z, random(360), -1, -1, 100);
+            
+        }
+        case 18: // Recreational
+        {
+            vehicleID = RecreationalIDs[random(sizeof(RecreationalIDs))][VEHICLE_ID];
+            GetPlayerPos(playerid, x, y, z);
+            CreateVehicle(vehicleID, x + random(10), y + random(10), z, random(360), -1, -1, 100);
+            
+        }
+    }
+    return vehicleID;
+}
+
+// Command to create a random vehicle
+CMD:randomvehicle(playerid, params[])
+{
+    new category = random(18) + 1; // Random category between 1 and 18
+    CreateRandomVehicle(playerid, category);
+    return 1;
+}
+
+// Short form command to create a random vehicle
+CMD:rv(playerid, params[])
+{
+    return cmd_randomvehicle(playerid, params);
+}
 */
 /*
 
