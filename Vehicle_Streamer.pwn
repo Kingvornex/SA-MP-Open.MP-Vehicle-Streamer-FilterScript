@@ -129,7 +129,7 @@ stock bool:IsInRangeOfAnyPlayer(vv)
 	foreach(new i : Player) // Iterate through all players.
 	{
 		// Validate the player ID and check if the player is connected
-//        if (i < 0 || i >= MAX_PLAYERS || !IsPlayerConnected(i)) continue;
+//        if (i < 0 || i >= MAX_PLAYERS || !IsPlayerConnected(i) || IsPlayerNPC(i)) continue;
 
 		new Float:posx, Float:posy, Float:posz; // Player position variables.
 		GetPlayerPos(i, posx, posy, posz); // Get the player's position.
