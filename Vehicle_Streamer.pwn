@@ -43,7 +43,7 @@ enum Stream_vehicle
 	bool:IsSpawned, // Indicates if the vehicle is currently spawned in the game world.
 	bool:IsActive,  // Indicates if the vehicle is active (in range of players).
 	bool:IsPopulated, // Indicates if the vehicle is populated with data.
-	bool:IsOcupied, // Indicates if the vehicle is Ocupied with data.
+	bool:IsOccupied, // Indicates if the vehicle is Ocupied with data.
 	vInterior,      // Interior ID for the vehicle.
 	vWorld,         // Virtual world ID for the vehicle.
 	vStream,        // Stream distance for the vehicle.
@@ -51,7 +51,36 @@ enum Stream_vehicle
 	vRespawn,		// Respawn delay for the vehicle.
 	vMods[12], 		// Array to store Vehicle Mods associated with the vehicle.      
 	vPlayerID[9],	// Array to store player IDs associated with the vehicle. Bus has 9 seats.
-	Float:vHealth   // Vehicle health.
+	Float:vHealth,   // Vehicle health.
+VEHICLE_PANEL_STATUS:panels,
+        VEHICLE_DOOR_STATUS:doors,
+        VEHICLE_LIGHT_STATUS:lights,
+        VEHICLE_TYRE_STATUS:tyres,
+TrailerID,
+CabID,
+DriverID,
+LastDriver,
+LANDING_GEAR_STATE:state,
+Float:rightX,//GetVehicleMatrix
+    Float:rightY,
+    Float:rightZ,
+    Float:upX,
+    Float:upY,
+    Float:upZ,
+    Float:atX,
+    Float:atY,
+    Float:atZ,
+//https://www.open.mp/docs/scripting/resources/vehicleinformationtypes
+
+    bool:engine, bool:lights, bool:alarm, bool:doors, bool:bonnet, bool:boot, bool:objective,
+seats,
+Float:w,//GetVehicleRotationQuat
+    Float:x,
+    Float:y,
+    Float:z
+//https://www.open.mp/docs/scripting/functions/GetVehicleParamsCarWindows
+//https://www.open.mp/docs/scripting/functions/GetVehicleParamsCarDoors
+//https://www.open.mp/docs/scripting/functions/GetVehicleParamsSirenState
 }
 new vInfo[MAX_STREAM_VEHICLES][Stream_vehicle]; // Array to store vehicle properties.
 
