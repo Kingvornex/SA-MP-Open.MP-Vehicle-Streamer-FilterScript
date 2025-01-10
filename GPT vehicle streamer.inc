@@ -1,3 +1,4 @@
+/*
 To create a **Vehicle Streamer** similar to the checkpoint streamer you provided, you can follow a similar approach by storing the vehicle data in an array, managing properties like position, owner, and activation status, and using a periodic seeker function to manage the visibility of vehicles for players. Here's a basic implementation:
 
 ### Vehicle Streamer Code
@@ -6,7 +7,7 @@ To create a **Vehicle Streamer** similar to the checkpoint streamer you provided
 // Vehicle Manager
 // (c) YourName, All rights reserved
 // Feel free to modify and use as needed
-
+*/
 /* natives
     native CreateVehicle(ownerid, vehicleid, Float:posX, Float:posY, Float:posZ, Float:angle, modelid); // Creates a vehicle
     native SetVehicleInterior(vehicleid, interiorid); // Changes the vehicle interior
@@ -283,6 +284,7 @@ stock VerifyVehicleExit(__playerid)
     }
     return 0;
 }
+/*
 ```
 
 ### Explanation:
@@ -331,3 +333,4 @@ public OnPlayerExitVehicle(playerid, vehicleid)
 ```
 
 This implementation gives you a full vehicle streaming system similar to the checkpoint streamer, with the ability to create, manage, and stream vehicles based on player proximity.
+*/
