@@ -175,3 +175,145 @@ stock UpdateVehicleData(vehicleID)
     SaveVehicleData(vehicleID);
 }
 
+// Called when a player enters a vehicle.
+public OnPlayerEnterVehicle(playerid, vehicleid, ispassenger)
+{
+    // Update vehicle state to reflect that it is now occupied.
+    vInfo[vehicleid][IsOccupied] = true;
+    vInfo[vehicleid][DriverID] = playerid;
+
+    printf("Player %d entered vehicle %d as %s.", playerid, vehicleid, ispassenger ? "passenger" : "driver");
+
+    return 1;
+}
+
+// Called when a player exits a vehicle.
+public OnPlayerExitVehicle(playerid, vehicleid)
+{
+    // Update vehicle state to reflect that it is now unoccupied.
+    vInfo[vehicleid][IsOccupied] = false;
+    vInfo[vehicleid][DriverID] = INVALID_PLAYER_ID;
+
+    printf("Player %d exited vehicle %d.", playerid, vehicleid);
+
+    return 1;
+}
+
+// Called when an unoccupied vehicle updates (such as movement or rotation changes).
+public OnUnoccupiedVehicleUpdate(vehicleid, playerid, passenger_seat)
+{
+    // Update the last known position and rotation of the vehicle.
+    GetVehiclePos(vehicleid, vInfo[vehicleid][vLastX], vInfo[vehicleid][vLastY], vInfo[vehicleid][vLastZ]);
+    GetVehicleZAngle(vehicleid, vInfo[vehicleid][vLastA]);
+
+    printf("Vehicle %d updated by player %d.", vehicleid, playerid);
+
+    return 1;
+}
+
+// Called when a vehicle's damage status is updated.
+public OnVehicleDamageStatusUpdate(vehicleid, panels, doors, lights, tyres)
+{
+    // Update damage status in the vehicle information array.
+    vInfo[vehicleid][panels] = panels;
+    vInfo[vehicleid][doors] = doors;
+    vInfo[vehicleid][lights] = lights;
+    vInfo[vehicleid][tyres] = tyres;
+
+    printf("Vehicle %d damage updated: panels %d, doors %d, lights %d, tyres %d.", vehicleid, panels, doors, lights, tyres);
+
+    return 1;
+}
+
+// Called when a vehicle is destroyed.
+public OnVehicleDeath(vehicleid, killerid)
+{
+    // Mark the vehicle as not spawned.
+    vInfo[vehicleid][IsSpawned] = false;
+
+    printf("Vehicle %d was destroyed by player %d.", vehicleid, killerid);
+
+    return 1;
+}
+
+// Called when a vehicle's mod is changed.
+public OnVehicleMod(vehicleid, playerid, componentid)
+{
+    // Add or update the vehicle's mod in the vMods array.
+    for (new i = 0; i < 12; i++)
+    {
+        if (vInfo[vehicleid][vMods][i] == 0)
+        {
+            vInfo[vehicleid][vMods][i] = componentid;
+            break;
+        }
+    }
+
+    printf("Vehicle %d modded by player %d with component %d.", vehicleid, playerid, componentid);
+
+    return 1;
+}
+
+// Called when a vehicle's paintjob is changed.
+public OnVehiclePaintjob(vehicleid, playerid, paintjobid)
+{
+    // Update the vehicle's paint job in the vehicle information array.
+    vInfo[vehicleid][vPaintJob] = paintjobid;
+
+    printf("Vehicle %d paintjob changed by player %d to %d.", vehicleid, playerid, paintjobid);
+
+    return 1;
+}
+
+// Called when a vehicle is resprayed.
+public OnVehicleRespray(vehicleid, playerid, color1, color2)
+{
+    // Update the vehicle's colors.
+    vInfo[vehicleid][vColor1] = color1;
+    vInfo[vehicleid][vColor2] = color2;
+
+    printf("Vehicle %d resprayed by player %d to colors %d, %d.", vehicleid, playerid, color1, color2);
+
+    return 1;
+}
+
+// Called when a vehicle's siren state is changed.
+public OnVehicleSirenStateChange(vehicleid, playerid, newstate)
+{
+    // Update the siren state.
+    vInfo[vehicleid][vSiren] = newstate;
+
+    printf("Vehicle %d siren state changed by player %d to %d.", vehicleid, playerid, newstate);
+
+    return 1;
+}
+
+// Called when a vehicle is spawned.
+public OnVehicleSpawn(vehicleid)
+{
+    // Mark the vehicle as spawned and update its initial position.
+    vInfo[vehicleid][IsSpawned] = true;
+    GetVehiclePos(vehicleid, vInfo[vehicleid][vLastX], vInfo[vehicleid][vLastY], vInfo[vehicleid][vLastZ]);
+    GetVehicleZAngle(vehicleid, vInfo[vehicleid][vLastA]);
+    GetVehicleHealth(vehicleid, vInfo[vehicleid][vHealth]);
+
+    printf("Vehicle %d spawned.", vehicleid);
+
+    return 1;
+}
+
+// Called when a vehicle streams in for a player.
+public OnVehicleStreamIn(vehicleid, forplayerid)
+{
+    printf("Vehicle %d streamed in for player %d.", vehicleid, forplayerid);
+
+    return 1;
+}
+
+// Called when a vehicle streams out for a player.
+public OnVehicleStreamOut(vehicleid, forplayerid)
+{
+    printf("Vehicle %d streamed out for player %d.", vehicleid, forplayerid);
+
+    return 1;
+}
