@@ -1,3 +1,175 @@
+Here's the complete implementation of your requested random vehicle mod include for open.mp:
+
+```pawn
+#include <open.mp>
+
+#define MAX_VEHICLE_MODS 93
+#define MIN_MOD_ID 1000
+#define MAX_MOD_ID 1093
+
+stock AddModToVeh(vid, modid)
+{
+    if(IsValidVehicle(vid))
+    {
+        if(IsValidVehicleComponent(GetVehicleModel(vid), modid))
+        {
+            AddVehicleComponent(vid, modid);
+            printf("Added mod %d to vehicle %d", modid, vid);
+            return 1;
+        }
+        else
+        {
+            printf("Vehicle %d cannot have mod %d", vid, modid);
+            return 0;
+        }
+    }
+    printf("Invalid vehicle ID: %d", vid);
+    return 0;
+}
+
+stock RandomVehMods(vehid, modcount)
+{
+    if(!IsValidVehicle(vehid))
+    {
+        printf("Invalid vehicle ID: %d", vehid);
+        return 0;
+    }
+
+    if(modcount < 1 || modcount > MAX_VEHICLE_MODS)
+    {
+        printf("Invalid mod count: %d (Must be between 1 and %d)", modcount, MAX_VEHICLE_MODS);
+        return 0;
+    }
+
+    new count = 0, themod, previousmod = 0;
+    new modelid = GetVehicleModel(vehid);
+    
+    for(new i = 0; i < modcount; i++)
+    {
+        // Generate random mod ID
+        themod = random(MAX_VEHICLE_MODS) + MIN_MOD_ID;
+        
+        // Ensure we don't get the same mod twice in a row
+        if(themod == previousmod)
+        {
+            themod = random(MAX_VEHICLE_MODS) + MIN_MOD_ID;
+        }
+        
+        // Check if mod is valid for this vehicle
+        if(IsValidVehicleComponent(modelid, themod))
+        {
+            if(AddModToVeh(vehid, themod))
+            {
+                count++;
+                previousmod = themod;
+            }
+        }
+    }
+    
+    printf("Added %d/%d random mods to vehicle %d", count, modcount, vehid);
+    return count;
+}
+
+// Example usage
+public OnPlayerCommandText(playerid, cmdtext[])
+{
+    if(!strcmp(cmdtext, "/randommods", true))
+    {
+        if(!IsPlayerInAnyVehicle(playerid))
+            return SendClientMessage(playerid, 0xFF0000AA, "You must be in a vehicle!");
+
+        new vehicleid = GetPlayerVehicleID(playerid);
+        RandomVehMods(vehicleid, 10); // Add 10 random mods
+        return 1;
+    }
+    return 0;
+}
+```
+
+Key features of this implementation:
+
+1. **AddModToVeh Function**:
+   - Validates vehicle ID
+   - Checks if mod is compatible with vehicle
+   - Adds the component if valid
+   - Provides feedback through console prints
+
+2. **RandomVehMods Function**:
+   - Validates input parameters
+   - Generates random mod IDs between 1000 and 1093
+   - Prevents consecutive duplicate mods
+   - Tracks successful mod additions
+   - Returns number of successfully added mods
+
+3. **Safety Checks**:
+   - Valid vehicle check
+   - Valid mod count range
+   - Component compatibility check
+   - Prevents duplicate mods in sequence
+
+4. **Example Command**:
+   - /randommods command for testing
+   - Adds 10 random mods to player's vehicle
+
+Additional improvements you could make:
+
+1. **Slot-based Randomization**:
+   ```pawn
+   stock RandomVehModsBySlot(vehid)
+   {
+       new slots[] = {
+           CARMODTYPE_SPOILER,
+           CARMODTYPE_HOOD,
+           CARMODTYPE_ROOF,
+           CARMODTYPE_SIDESKIRT,
+           CARMODTYPE_LAMPS,
+           CARMODTYPE_NITRO,
+           CARMODTYPE_EXHAUST,
+           CARMODTYPE_WHEELS,
+           CARMODTYPE_STEREO,
+           CARMODTYPE_HYDRAULICS,
+           CARMODTYPE_FRONT_BUMPER,
+           CARMODTYPE_REAR_BUMPER,
+           CARMODTYPE_VENT_RIGHT,
+           CARMODTYPE_VENT_LEFT
+       };
+       
+       new count = 0;
+       new modelid = GetVehicleModel(vehid);
+       
+       foreach(new slot : slots)
+       {
+           new components[16];
+           new count = GetVehicleComponentsInSlot(modelid, slot, components, sizeof(components));
+           
+           if(count > 0)
+           {
+               new random_component = components[random(count)];
+               AddModToVeh(vehid, random_component);
+               count++;
+           }
+       }
+       return count;
+   }
+   ```
+
+2. **Player Feedback**:
+   - Add client messages for player feedback
+   - Show which mods were added
+   - Display success/failure messages
+
+3. **Configuration Options**:
+   - Allow specifying which slots to randomize
+   - Add blacklist/whitelist for specific mods
+   - Set probability weights for different mod types
+
+4. **Persistent Mods**:
+   - Save mods to vehicle data
+   - Restore mods when vehicle respawns
+   - Track mod history
+
+Would you like me to expand on any of these additional features?
+
 Here's an implementation of an open.mp include file that adds random modifications to vehicles:
 
 ```pawn
