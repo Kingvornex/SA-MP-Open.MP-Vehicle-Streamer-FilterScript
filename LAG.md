@@ -45,3 +45,95 @@ After reviewing the SA-MP/Open.MP Vehicle Streamer FilterScript you linked, I ca
    - Break loops early when conditions are met
 
 Would you like me to provide more specific code optimizations for any particular part of the filter script?
+
+Thanks for sharing your GitHub repo. If the filter script in [SA-MP-Open.MP-Vehicle-Streamer-FilterScript](https://github.com/Kingvornex/SA-MP-Open.MP-Vehicle-Streamer-FilterScript) is causing lag, it’s likely due to one or more of the following reasons:
+
+---
+
+### 🔍 Common Causes of Lag in SA-MP Filterscripts (Especially Streamers)
+
+#### 1. **Too many `CreateVehicle` calls at once**
+
+If you're creating hundreds or thousands of vehicles on server start or player connect without streaming logic or batching, it will lag.
+
+**Solution:**
+Use a streaming system that only loads vehicles in range (or nearest N vehicles) to the player.
+
+#### 2. **Inefficient vehicle streaming logic**
+
+You might be checking all vehicles for every player every tick or too often (e.g., every `OnPlayerUpdate` or every 100ms), causing a CPU spike.
+
+**Solution:**
+Throttle updates (e.g., every 1–2 seconds per player) and spatially divide vehicle checks (e.g., using grid/cell partitioning).
+
+#### 3. **Inefficient loops**
+
+If you use loops like:
+
+```pawn
+for(new i = 0; i < MAX_VEHICLES; i++)
+```
+
+...without checking if that vehicle is valid, streamed, or near the player, you waste performance.
+
+---
+
+### 📋 What You Should Do Now
+
+#### Step 1: Check how many vehicles are being created
+
+Look in the script for lines like:
+
+```pawn
+CreateVehicle(...);
+```
+
+Count them or log how many are created. If it’s more than \~300-400, consider dynamic loading (streaming).
+
+#### Step 2: Check streaming tick frequency
+
+If you’re running updates on `OnPlayerUpdate` or using tight `SetTimer` calls, space them out.
+
+You might replace:
+
+```pawn
+SetTimer("UpdateVehicleStream", 100, true);
+```
+
+With something like:
+
+```pawn
+SetTimer("UpdateVehicleStream", 1000, true); // every second instead of every 100ms
+```
+
+#### Step 3: Profile the code
+
+Use OpenMP’s built-in profiler (if enabled), or print timestamps around streaming logic to see which part is taking the most time.
+
+Example:
+
+```pawn
+new start = GetTickCount();
+// heavy logic here
+printf("Stream logic took: %d ms", GetTickCount() - start);
+```
+
+#### Step 4: Optimize your distance checks
+
+Use squared distance instead of real distance:
+
+```pawn
+// Instead of
+if(GetDistanceBetweenPoints(x1, y1, x2, y2) < 100.0)
+
+// Use
+if((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2) < 10000.0)
+```
+
+---
+
+### 🔧 Want Help Optimizing Specific Part?
+
+If you want me to **review a specific file or function** that seems to cause the lag (like `StreamVehiclesForPlayer` or similar), just name the function or paste it here. I’ll clean and optimize it.
+
+Let me know how many vehicles you’re spawning too.
