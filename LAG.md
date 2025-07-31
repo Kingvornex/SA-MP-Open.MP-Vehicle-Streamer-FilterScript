@@ -44,9 +44,6 @@ After reviewing the SA-MP/Open.MP Vehicle Streamer FilterScript you linked, I ca
    - Minimize nested loops when possible
    - Break loops early when conditions are met
 
-Would you like me to provide more specific code optimizations for any particular part of the filter script?
-
-Thanks for sharing your GitHub repo. If the filter script in [SA-MP-Open.MP-Vehicle-Streamer-FilterScript](https://github.com/Kingvornex/SA-MP-Open.MP-Vehicle-Streamer-FilterScript) is causing lag, it’s likely due to one or more of the following reasons:
 
 ---
 
@@ -132,8 +129,6 @@ if((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2) < 10000.0)
 
 ---
 
-### 🔧 Want Help Optimizing Specific Part?
-
-If you want me to **review a specific file or function** that seems to cause the lag (like `StreamVehiclesForPlayer` or similar), just name the function or paste it here. I’ll clean and optimize it.
-
-Let me know how many vehicles you’re spawning too.
+# Profile Server Performance
+Use a Profiler: Use a Pawn profiler (e.g., profiler.inc) to identify which functions in the script consume the most CPU time. This can pinpoint specific areas for optimization.
+Monitor Server Logs: Check for warnings or errors in the server log, such as “Streamer Plugin: Warning: Include file version does not match plugin version” or unregistered function errors (e.g., SSCANF issues). These indicate compatibility problems that could cause lag.
